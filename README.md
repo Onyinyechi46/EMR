@@ -235,15 +235,14 @@ A: Ensure all required fields are filled and email format is correct. The PKH mu
 
 ## 📝 License
 
-Copyright © 2024 EMR Pro. All rights reserved.
+Copyright © 2026 EMR Pro. All rights reserved.
 
 This software is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
 
 ## 🤝 Support
 
-- **Documentation**: [docs.emr-pro.com](https://docs.emr-pro.com)
-- **Email**: support@emr-pro.com
-- **GitHub Issues**: [github.com/emr-pro/issues](https://github.com/emr-pro/issues)
+
+- **Email**: rmambeda@gmail.com
 
 ## 🙏 Acknowledgments
 
