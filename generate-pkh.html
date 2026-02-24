@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMR Pro - My PubKeyHash</title>
+  <script type="module">
+    import { Lucid, Blockfrost } from "https://unpkg.com/lucid-cardano@0.10.11/web/mod.js";
+
+    // Configuration
+    const BLOCKFROST_URL = "https://cardano-preprod.blockfrost.io/api/v0";
+    const BLOCKFROST_KEY = "preprodYjRkHfcazNkL0xxG9C2RdUbUoTrG7wip";
+    const NETWORK = "Preprod";
+
+    let lucid;
+    let walletAddress;
+    let walletPkh = "";
+
+    // Logging function
+    function log(msg, isError = false) {
+      const el = document.getElementById("log");
+      const prefix = isError ? "❌ " : "✅ ";
+      el.textContent += (isError ? prefix : "") + msg + "\n";
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById("log").textContent = "";
+    }
+
+    // Copy to clipboard
+    window.copyToClipboard = async function(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("✅ Copied to clipboard!");
+        log(`✅ Copied: ${text.substring(0, 20)}...`);
+      } catch (err) {
+        log(`❌ Failed to copy: ${err}`, true);
+      }
+    }
+
+    // Show toast notification
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast' + (isError ? ' error' : '');
+      toast.style.display = 'block';
+      
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+
+    // Connect wallet
+    window.connectWallet = async function() {
+      clearLog();
+      
+      if (!window.cardano?.lace) {
+        log("Lace wallet not found. Please install Lace wallet.", true);
+        showToast("❌ Lace wallet not found", true);
+        return;
+      }
+
+      try {
+        log("🔌 Connecting to Lace wallet...");
+        
+        lucid = await Lucid.new(new Blockfrost(BLOCKFROST_URL, BLOCKFROST_KEY), NETWORK);
+        const api = await window.cardano.lace.enable();
+        lucid.selectWallet(api);
+
+        walletAddress = await lucid.wallet.address();
+        
+        // Get wallet PubKeyHash
+        const walletDetails = lucid.utils.getAddressDetails(walletAddress);
+        walletPkh = walletDetails.paymentCredential.hash;
+
+        // Update UI
+        document.getElementById("wallet-status").innerHTML = "✅ Connected";
+        document.getElementById("connect-btn").style.display = "none";
+        document.getElementById("disconnect-btn").style.display = "inline-block";
+        document.getElementById("wallet-info").style.display = "block";
+        document.getElementById("pkh-display").style.display = "block";
+        
+        document.getElementById("wallet-address").textContent = walletAddress;
+        document.getElementById("pkh-value").textContent = walletPkh;
+        
+        // Create QR code for PKH (simple version)
+        document.getElementById("pkh-qr").innerHTML = generateSimpleQR(walletPkh);
+        
+        log(`✅ Successfully connected!`);
+        log(`📝 Your PubKeyHash: ${walletPkh}`);
+        log(`📍 Wallet Address: ${walletAddress.substring(0, 50)}...`);
+        
+        showToast("✅ Wallet connected successfully!");
+        
+      } catch (error) {
+        log(`❌ Failed to connect: ${error.message}`, true);
+        showToast("❌ Connection failed", true);
+      }
+    }
+
+    // Disconnect wallet
+    window.disconnectWallet = function() {
+      lucid = null;
+      walletAddress = null;
+      walletPkh = "";
+      
+      document.getElementById("wallet-status").innerHTML = "🔌 Not Connected";
+      document.getElementById("connect-btn").style.display = "inline-block";
+      document.getElementById("disconnect-btn").style.display = "none";
+      document.getElementById("wallet-info").style.display = "none";
+      document.getElementById("pkh-display").style.display = "none";
+      
+      log("👋 Wallet disconnected");
+      showToast("👋 Wallet disconnected");
+    }
+
+    // Generate a simple ASCII QR representation
+    function generateSimpleQR(text) {
+      if (!text) return '';
+      
+      const hash = text.substring(0, 20);
+      return `
+        <div style="font-family: monospace; line-height: 1.2; background: white; padding: 15px; border-radius: 8px;">
+          <div>┌──────────────────────────────────┐</div>
+          <div>│  █▀▀▀▀▀█ █▀▀▀▀▀█ █▀▀▀▀▀█  │</div>
+          <div>│  █ ███ █ █ ███ █ █ ███ █  │</div>
+          <div>│  █ ▀▀▀ █ █ ▀▀▀ █ █ ▀▀▀ █  │</div>
+          <div>│  ▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀  │</div>
+          <div>│  ▀██ █▄▄  ▄▀ █▄▀▄█ ▀█▀█▄  │</div>
+          <div>│  ▀ ▄█ █▀█▀▄▀▀▀██▀ █▀▄ ▀▀  │</div>
+          <div>│  █▀▀▀▀▀█ ▀█▄▀▄ █ ▀ ▄ ▄█   │</div>
+          <div>│  █ ███ █ ▄▀▀▄▀█▀▄█▀█▀█▀▄  │</div>
+          <div>│  █ ▀▀▀ █ ██▄▀▀▄█▄▄▀▄█▀▀   │</div>
+          <div>│  ▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀  │</div>
+          <div>└──────────────────────────────────┘</div>
+          <div style="text-align: center; margin-top: 5px; font-size: 10px;">${hash}</div>
+        </div>
+      `;
+    }
+
+    // Copy PKH with different formats
+    window.copyAsHex = function() {
+      copyToClipboard(walletPkh);
+    }
+
+    window.copyAsBytes = function() {
+      // Convert hex to bytes representation
+      const bytes = walletPkh.match(/.{1,2}/g)?.map(b => parseInt(b, 16)) || [];
+      copyToClipboard(JSON.stringify(bytes));
+    }
+
+    window.copyAsConstr = function() {
+      // Copy as Plutus Data constructor format
+      copyToClipboard(`new Constr(0, [${walletPkh}])`);
+    }
+
+    // Check connection status on load
+    window.onload = function() {
+      log("👋 Ready to connect your Lace wallet");
+      log("💡 Click 'Connect Wallet' to get your PubKeyHash");
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: white;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      color: rgba(255,255,255,0.9);
+      font-size: 1.1em;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .card h2 {
+      color: #2d3748;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wallet-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .status-badge.connected {
+      background: #c6f6d5;
+      color: #276749;
+    }
+
+    .status-badge.disconnected {
+      background: #fed7d7;
+      color: #c53030;
+    }
+
+    .btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-right: 10px;
+    }
+
+    .btn:hover {
+      background: #5a67d8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn-secondary {
+      background: #48bb78;
+    }
+
+    .btn-secondary:hover {
+      background: #38a169;
+    }
+
+    .btn-warning {
+      background: #ed8936;
+    }
+
+    .btn-warning:hover {
+      background: #dd6b20;
+    }
+
+    .btn-danger {
+      background: #f56565;
+    }
+
+    .btn-danger:hover {
+      background: #e53e3e;
+    }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    .info-box {
+      background: #ebf8ff;
+      border-left: 4px solid #4299e1;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+
+    .pkh-box {
+      background: #1a202c;
+      color: #a0aec0;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      word-break: break-all;
+      margin: 15px 0;
+      border: 2px solid #4a5568;
+    }
+
+    .address-box {
+      background: #f7fafc;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      margin: 10px 0;
+    }
+
+    .copy-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .log-container {
+      background: #1a202c;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #log {
+      color: #a0aec0;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #48bb78;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+      display: none;
+    }
+
+    .toast.error {
+      background: #f56565;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .network-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #9f7aea;
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔑 My PubKeyHash</h1>
+      <p>Get your real PubKeyHash from your connected Lace wallet</p>
+    </div>
+
+    <div class="card">
+      <div class="wallet-status">
+        <div>
+          <strong>Wallet Status:</strong>
+          <span id="wallet-status" class="status-badge disconnected">🔌 Not Connected</span>
+        </div>
+        <div>
+          <button id="connect-btn" onclick="connectWallet()" class="btn">🔌 Connect Wallet</button>
+          <button id="disconnect-btn" onclick="disconnectWallet()" class="btn btn-danger" style="display: none;">🔌 Disconnect</button>
+        </div>
+      </div>
+
+      <div id="wallet-info" style="display: none;">
+        <div class="info-box">
+          <strong>📝 What is a PubKeyHash?</strong>
+          <p style="margin-top: 10px;">Your PubKeyHash is a unique identifier derived from your wallet address. It's used in smart contracts to identify you as a patient or doctor.</p>
+        </div>
+
+        <h3>📍 Wallet Address</h3>
+        <div class="address-box" id="wallet-address"></div>
+
+        <h3>🔑 Your PubKeyHash</h3>
+        <div class="pkh-box" id="pkh-value"></div>
+
+        <div class="copy-buttons">
+          <button onclick="copyAsHex()" class="btn btn-secondary btn-small">📋 Copy as Hex</button>
+          <button onclick="copyAsBytes()" class="btn btn-secondary btn-small">📋 Copy as Bytes</button>
+          <button onclick="copyAsConstr()" class="btn btn-secondary btn-small">📋 Copy as Constr</button>
+        </div>
+
+        <div class="qr-container" id="pkh-qr">
+          <!-- QR code will be generated here -->
+        </div>
+
+        <div class="info-box" style="background: #fefcbf; border-left-color: #ecc94b;">
+          <strong>💡 Usage Tips:</strong>
+          <ul style="margin-top: 10px; margin-left: 20px;">
+            <li>Use this PKH when creating records as a <strong>patient</strong></li>
+            <li>Use this PKH when creating records as a <strong>doctor</strong></li>
+            <li>Share this PKH with doctors so they can create records for you</li>
+            <li>Ask your patients for their PKH to create records for them</li>
+          </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>📋 Quick Test Values</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;"><strong>Your PKH:</strong></td>
+            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-family: monospace; font-size: 12px;" id="pkh-short"></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;"><strong>Network:</strong></td>
+            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">Preprod <span class="network-badge">Testnet</span></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px;"><strong>Script Address:</strong></td>
+            <td style="padding: 8px; font-family: monospace; font-size: 12px;" id="script-address">Will appear after connection</td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="pkh-display" style="display: none;">
+        <!-- This will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Activity Log</h2>
+      <div class="log-container">
+        <pre id="log">Ready to connect...</pre>
+      </div>
+      <button onclick="clearLog()" class="btn btn-small" style="margin-top: 10px;">Clear Log</button>
+    </div>
+
+    <div class="card">
+      <h2>🔍 What is a PubKeyHash?</h2>
+      <p>A PubKeyHash (Public Key Hash) is a cryptographic hash of your wallet's public key. In Cardano, it's used to:</p>
+      <ul style="margin-top: 10px; margin-left: 20px;">
+        <li>Identify you in smart contracts</li>
+        <li>Control access to your records</li>
+        <li>Authorize transactions</li>
+        <li>Verify your identity as a patient or doctor</li>
+      </ul>
+      <p style="margin-top: 15px;"><strong>Your PubKeyHash is derived from your wallet address but is shorter and more convenient for use in smart contracts.</strong></p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // Update short PKH when available
+    function updateShortPKH() {
+      const pkhValue = document.getElementById('pkh-value');
+      const pkhShort = document.getElementById('pkh-short');
+      if (pkhValue && pkhShort && pkhValue.textContent) {
+        pkhShort.textContent = pkhValue.textContent.substring(0, 30) + '...';
+      }
+    }
+
+    // Override copyAsHex to update short PKH
+    const originalCopyAsHex = window.copyAsHex;
+    window.copyAsHex = function() {
+      originalCopyAsHex();
+      updateShortPKH();
+    }
+
+    // Monitor for PKH changes
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList' && mutation.target.id === 'pkh-value') {
+          updateShortPKH();
+        }
+      });
+    });
+
+    // Start observing when the page loads
+    window.onload = function() {
+      const pkhElement = document.getElementById('pkh-value');
+      if (pkhElement) {
+        observer.observe(pkhElement, { childList: true, characterData: true, subtree: true });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMR Pro - Patient Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="emr.js"></script>
+  <style>
+    .doctor-item {
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+    .doctor-item:hover {
+      background: #f7fafc;
+      border-color: #4299e1;
+    }
+    .doctor-item.selected {
+      background: #ebf8ff;
+      border-color: #4299e1;
+      border-width: 2px;
+    }
+    .specialty-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #4299e1;
+      color: white;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+    .availability-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #48bb78;
+      color: white;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+    .rating-stars {
+      color: #f6ad55;
+      font-size: 12px;
+    }
+    .search-box {
+      margin-bottom: 15px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .search-box input:focus {
+      outline: none;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+    .selected-doctor-info {
+      background: #ebf8ff;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .appointment-item {
+      transition: all 0.3s ease;
+    }
+    .appointment-item:hover {
+      background: #f7fafc;
+    }
+    .empty-state {
+      padding: 30px;
+      text-align: center;
+      color: #a0aec0;
+      font-style: italic;
+    }
+    .rejected-badge {
+      background: #e53e3e;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .warning-banner {
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      color: #c53030;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .doctors-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .doctor-select-btn {
+      background: #4299e1;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .doctor-select-btn:hover {
+      background: #3182ce;
+    }
+    .doctor-card {
+      padding: 15px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .doctor-card:last-child {
+      border-bottom: none;
+    }
+    .doctor-info h4 {
+      margin: 0 0 5px 0;
+      color: #2d3748;
+    }
+    .doctor-details {
+      font-size: 12px;
+      color: #718096;
+      margin: 3px 0;
+    }
+    .doctor-avatar {
+      width: 40px;
+      height: 40px;
+      background: #4299e1;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      margin-right: 12px;
+    }
+    .doctor-list-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .doctor-list-item:last-child {
+      border-bottom: none;
+    }
+    .doctor-list-content {
+      flex: 1;
+    }
+    .loading-doctors {
+      padding: 20px;
+      text-align: center;
+      color: #718096;
+      font-style: italic;
+    }
+    .no-doctors-found {
+      padding: 30px;
+      text-align: center;
+      color: #a0aec0;
+    }
+    .search-hint {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 5px;
+      text-align: center;
+    }
+    .welcome-text h2 {
+      margin-bottom: 5px;
+    }
+    .patient-email {
+      color: #718096;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    /* Prescription Styles */
+    .prescription-card {
+      background: #f0fff4;
+      border-left: 4px solid #48bb78;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .prescription-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .prescription-card.expired {
+      background: #fff5f5;
+      border-left-color: #f56565;
+    }
+
+    .prescription-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .prescription-doctor {
+      font-weight: bold;
+      color: #2d3748;
+      font-size: 16px;
+    }
+
+    .prescription-status {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: white;
+    }
+
+    .status-active {
+      background: #48bb78;
+    }
+
+    .status-expired {
+      background: #f56565;
+    }
+
+    .prescription-medicines {
+      margin-top: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 4px;
+    }
+
+    .medicine-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .medicine-item:last-child {
+      border-bottom: none;
+    }
+
+    .medicine-name {
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .medicine-details {
+      color: #718096;
+      font-size: 12px;
+    }
+
+    .prescription-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .prescription-instructions {
+      margin-top: 10px;
+      padding: 10px;
+      background: #ebf8ff;
+      border-radius: 4px;
+      font-style: italic;
+      color: #2c5282;
+    }
+
+    .refill-badge {
+      background: #9f7aea;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .prescription-tab {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #edf2f7;
+      color: #4a5568;
+      transition: all 0.3s ease;
+    }
+
+    .prescription-tab.active {
+      background: #48bb78;
+      color: white;
+    }
+
+    .prescriptions-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    /* Emergency Styles */
+    .record-card {
+      background: #fff5f5;
+      border: 1px solid #fc8181;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .record-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .record-doctor {
+      font-weight: bold;
+      color: #c53030;
+    }
+
+    .record-date {
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .record-details {
+      font-size: 13px;
+      color: #4a5568;
+    }
+
+    .emergency-badge {
+      background: #f56565;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>🏥 EMR Pro</h1>
+        <span class="role-badge patient">Patient Portal</span>
+      </div>
+      <div class="header-right">
+        <span id="wallet-status" class="wallet-badge">🔌 Not Connected</span>
+        <button onclick="window.connectWallet()" id="connect-btn" class="btn-primary">Connect Wallet</button>
+        <button onclick="window.location.href='index.html'" class="btn-small">⇽ Change Role</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" style="display: none;">
+      
+      <!-- Welcome Section with Next Check-up -->
+      <div class="welcome-section">
+        <div class="welcome-text">
+          <h2>Welcome back, <span id="patient-name">Patient</span> 👋</h2>
+          <div id="patient-email" class="patient-email"></div>
+        </div>
+        <div class="next-checkup-card" id="next-checkup">
+          <div class="checkup-icon">⏰</div>
+          <div class="checkup-info">
+            <h3>Next Check-up</h3>
+            <div id="next-checkup-details">
+              <p class="checkup-date">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="total-records">0</div>
+          <div class="stat-label">Total Records</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="pending-results">0</div>
+          <div class="stat-label">Pending Results</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="upcoming-appointments">0</div>
+          <div class="stat-label">Upcoming</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="rejected-count">0</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button id="view-records" class="btn-primary" onclick="window.viewRecords()">📋 My Records</button>
+        <button id="view-prescriptions" class="btn-success" onclick="window.showPrescriptionsModal()">💊 My Prescriptions</button>
+        <button id="new-appointment" class="btn-success" onclick="window.showAppointmentModal()">📅 Request Appointment</button>
+        <button id="emergency-access" class="btn-emergency" onclick="window.showEmergencyModal()">🚨 Emergency Access</button>
+        <button id="emergency-history" class="btn-info" onclick="window.showEmergencyHistory()">🚨 Emergency History</button>
+        <button id="export-data" class="btn-secondary" onclick="window.exportRecords()">📥 Export</button>
+        <button id="verify-record" class="btn-info" onclick="window.showVerifyModal()">✅ Verify</button>
+        <button id="find-doctor" class="btn-info" onclick="window.showFindDoctorModal()">🔍 Find Doctor</button>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="two-column">
+        <!-- Left Column -->
+        <div class="left-column">
+          <!-- Upcoming Appointments -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📅 Upcoming Appointments</h2>
+              <span class="badge" id="appointment-count">0</span>
+            </div>
+            <div id="appointments-list" class="appointments-container">
+              <div class="loading">Connect wallet to view appointments...</div>
+            </div>
+          </div>
+
+          <!-- My Doctors -->
+          <div class="card">
+            <div class="card-header">
+              <h2>👨‍⚕️ My Doctors</h2>
+              <button onclick="window.showFindDoctorModal()" class="btn-small">Find More</button>
+            </div>
+            <div id="my-doctors-list" class="doctors-container">
+              <div class="loading">Connect wallet to view doctors...</div>
+            </div>
+          </div>
+
+          <!-- Recent Records -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📋 Recent Records</h2>
+              <button onclick="window.viewRecords()" class="btn-small">View All</button>
+            </div>
+            <div id="recent-records-list" class="records-container">
+              <div class="loading">Connect wallet to view records...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+          <!-- Health Timeline -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📊 Health Timeline</h2>
+            </div>
+            <div id="health-timeline" class="timeline-container">
+              <div class="loading">Connect wallet to view timeline...</div>
+            </div>
+          </div>
+
+          <!-- Active Prescriptions -->
+          <div class="card">
+            <div class="card-header">
+              <h2>💊 Active Prescriptions</h2>
+              <span class="badge" id="prescriptions-count">0</span>
+            </div>
+            <div id="prescriptions-list" class="prescriptions-container">
+              <div class="loading">Connect wallet to view prescriptions...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rejected Appointments Section -->
+      <div id="rejected-section" class="card" style="display: none; border-left: 4px solid #e53e3e;">
+        <div class="card-header">
+          <h2 style="color: #e53e3e;">❌ Rejected Appointments</h2>
+          <span class="badge" style="background: #e53e3e;" id="rejected-section-count">0</span>
+        </div>
+        <div id="rejected-appointments-list" class="appointments-container">
+          <!-- Rejected appointments will be listed here -->
+        </div>
+        <div style="padding: 10px; text-align: center;">
+          <button onclick="window.showAppointmentModal()" class="btn-success btn-small">Request New Appointment</button>
+        </div>
+      </div>
+
+      <!-- Full Records View (Hidden by default) -->
+      <div id="full-records-view" class="card" style="display: none;">
+        <div class="card-header">
+          <h2>📋 All Medical Records</h2>
+          <button onclick="window.toggleRecordsView()" class="btn-small">Hide</button>
+        </div>
+        <div id="records-list" class="records-container"></div>
+      </div>
+    </div>
+
+    <!-- Appointment Modal -->
+    <div id="appointment-modal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 600px;">
+        <h3>📅 Request Appointment</h3>
+        
+        <!-- Doctor Selection Section -->
+        <div class="form-group">
+          <label>Select Doctor *</label>
+          <div class="search-box">
+            <input type="text" id="doctor-search" placeholder="Search doctor by name or specialization">
+          </div>
+          <div class="search-hint">Type doctor's name to search</div>
+          
+          <div class="doctors-list" id="doctors-list">
+            <div class="loading-doctors">Start typing to search for doctors...</div>
+          </div>
+          
+          <div id="selected-doctor-info" class="selected-doctor-info" style="display: none;">
+            <span id="selected-doctor-name"></span>
+            <button type="button" onclick="window.clearDoctorSelection()" class="btn-small">Change</button>
+          </div>
+        </div>
+
+        <!-- Hidden input for doctor PKH -->
+        <input type="hidden" id="appointment-doctor" value="">
+        
+        <div class="form-group">
+          <label>Appointment Date:</label>
+          <input type="date" id="appointment-date" min="">
+        </div>
+        
+        <div class="form-group">
+          <label>Appointment Time:</label>
+          <select id="appointment-time">
+            <option value="09:00">9:00 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="13:00">1:00 PM</option>
+            <option value="14:00">2:00 PM</option>
+            <option value="15:00">3:00 PM</option>
+            <option value="16:00">4:00 PM</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Reason for Visit:</label>
+          <select id="appointment-reason">
+            <option value="Regular Check-up">Regular Check-up</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Urgent Care">Urgent Care</option>
+            <option value="Lab Results">Lab Results Review</option>
+            <option value="Prescription Refill">Prescription Refill</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Additional Notes:</label>
+          <textarea id="appointment-notes" rows="3" placeholder="Any specific concerns..."></textarea>
+        </div>
+        
+        <div class="modal-buttons">
+          <button onclick="window.requestAppointment()" class="btn-success">Request Appointment</button>
+          <button onclick="window.closeAppointmentModal()" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Find Doctor Modal -->
+    <div id="find-doctor-modal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 700px;">
+        <h3>🔍 Find a Doctor</h3>
+        
+        <div class="search-box">
+          <input type="text" id="find-doctor-search" placeholder="Search doctor by name or specialization">
+        </div>
+        <div class="search-hint">Type doctor's name to search</div>
+        
+        <div id="all-doctors-list" style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+          <div class="loading-doctors">Type to search for doctors</div>
+        </div>
+        
+        <div class="modal-buttons">
+          <button onclick="window.closeFindDoctorModal()" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prescriptions Modal -->
+    <div id="prescriptions-modal" class="modal" style="display: none;">
+      <div class="modal-content large">
+        <h3>💊 My Prescriptions</h3>
+        
+        <div class="tab-buttons">
+          <button onclick="window.showPrescriptionTab('active')" class="prescription-tab active" id="tab-active">Active</button>
+          <button onclick="window.showPrescriptionTab('expired')" class="prescription-tab" id="tab-expired">Expired</button>
+          <button onclick="window.showPrescriptionTab('all')" class="prescription-tab" id="tab-all">All</button>
+        </div>
+        
+        <div id="all-prescriptions-list" class="prescriptions-list" style="max-height: 400px; overflow-y: auto;">
+          <!-- Prescriptions will be listed here -->
+        </div>
+        
+        <div class="modal-buttons" style="margin-top: 20px;">
+          <button onclick="window.closePrescriptionsModal()" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prescription Details Modal -->
+    <div id="prescription-details-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h3>💊 Prescription Details</h3>
+        <div id="prescription-details-content"></div>
+        <div class="modal-buttons">
+          <button onclick="window.closePrescriptionDetailsModal()" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div id="emergency-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h3>🚨 Emergency Access</h3>
+        <p style="color: #e53e3e; margin-bottom: 20px;">⚠️ This action will be logged for audit purposes</p>
+        
+        <div class="form-group">
+          <label>Select Your Doctor:</label>
+          <div class="search-box">
+            <input type="text" id="emergency-doctor-search" placeholder="Search your doctor by name">
+          </div>
+          <div id="emergency-doctor-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 10px; padding: 10px;">
+            <div class="loading-doctors">Type to search for your doctors...</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Select Your Record:</label>
+          <div id="emergency-records-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+            <div class="loading-doctors">Select a doctor first to see records...</div>
+          </div>
+        </div>
+
+        <div id="selected-emergency-info" style="display: none; background: #fff5f5; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #e53e3e;">
+          <strong>Selected Record:</strong>
+          <p id="selected-record-details"></p>
+        </div>
+        
+        <div class="form-group">
+          <label>Emergency Reason:</label>
+          <select id="emergency-reason-select">
+            <option value="Medical Emergency">Medical Emergency</option>
+            <option value="Unconscious Patient">Unconscious Patient</option>
+            <option value="Cannot Access Records">Cannot Access My Records</option>
+            <option value="Need Immediate Medical History">Need Immediate Medical History</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group" id="other-reason-container" style="display: none;">
+          <label>Please specify:</label>
+          <input type="text" id="other-reason" placeholder="Enter reason">
+        </div>
+        
+        <!-- Hidden inputs for selected data -->
+        <input type="hidden" id="emergency-record-hash">
+        <input type="hidden" id="emergency-doctor-pkh">
+        
+        <div class="modal-buttons">
+          <button onclick="window.requestEmergencyAccess()" class="btn-emergency">Request Emergency Access</button>
+          <button onclick="window.closeEmergencyModal()" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency History Modal -->
+    <div id="emergency-history-modal" class="modal" style="display: none;">
+      <div class="modal-content large">
+        <h3>🚨 Emergency Access History</h3>
+        <div id="emergency-history-list" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+          <!-- Emergency history will be listed here -->
+        </div>
+        <div class="modal-buttons">
+          <button onclick="window.closeEmergencyHistoryModal()" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verify Modal -->
+    <div id="verify-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h3>✅ Verify Record</h3>
+        <div class="form-group">
+          <label>Select Record to Verify:</label>
+          <div id="verify-records-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+            <div class="loading-doctors">Loading your records...</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Original Summary:</label>
+          <textarea id="verifySummary" rows="3" placeholder="Enter the original summary text"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button onclick="window.verifyRecord()" class="btn-primary">Verify</button>
+          <button onclick="window.closeVerifyModal()" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Activity Log</h2>
+        <button onclick="window.clearLog()" class="btn-small">Clear</button>
+      </div>
+      <pre id="log">Ready to connect...</pre>
+    </div>
+  </div>
+
+  <script type="module">
+    // Patient-specific functions
+    let lucid, walletPkh, scriptAddress;
+    let appointments = [];
+    let myDoctors = [];
+    let patientInfo = null;
+    let prescriptions = [];
+    let myRecords = [];
+    
+    // Caches
+    const patientNameCache = new Map();
+    const doctorCache = new Map();
+    
+    // Make functions available globally for onclick handlers
+    window.connectWallet = async function() {
+      const role = 'patient';
+      
+      if (!window.cardano?.lace) {
+        window.log("Lace wallet not found. Please install Lace wallet.", true);
+        return;
+      }
+
+      try {
+        // Initialize Lucid
+        lucid = await Lucid.new(new Blockfrost(BLOCKFROST_URL, BLOCKFROST_KEY), NETWORK);
+        const api = await window.cardano.lace.enable();
+        lucid.selectWallet(api);
+
+        const walletAddress = await lucid.wallet.address();
+        scriptAddress = lucid.utils.validatorToAddress(script);
+        
+        const walletDetails = lucid.utils.getAddressDetails(walletAddress);
+        walletPkh = walletDetails.paymentCredential.hash;
+
+        // Store in window for other functions to use
+        window.lucid = lucid;
+        window.walletPkh = walletPkh;
+        window.scriptAddress = scriptAddress;
+
+        // Update UI
+        document.getElementById("wallet-status").innerHTML = `✅ Connected as PATIENT`;
+        document.getElementById("connect-btn").style.display = "none";
+        document.getElementById("main-content").style.display = "block";
+        
+        // Get patient info
+        await getPatientInfo(walletPkh);
+        
+        // Load patient dashboard
+        await loadPatientDashboard();
+        
+        window.log(`✅ Connected as PATIENT`);
+        
+      } catch (error) {
+        window.log(`Failed to connect: ${error.message}`, true);
+      }
+    }
+
+    // Get patient info from database
+    async function getPatientInfo(pkh) {
+      try {
+        const response = await fetch(`get_patient_info.php?pkh=${encodeURIComponent(pkh)}`);
+        const data = await response.json();
+        
+        if (data.success && data.patient) {
+          patientInfo = data.patient;
+          document.getElementById('patient-name').textContent = patientInfo.name;
+          if (patientInfo.email) {
+            document.getElementById('patient-email').textContent = patientInfo.email;
+          }
+          patientNameCache.set(pkh, patientInfo.name);
+        } else {
+          // If not registered, prompt to register
+          if (confirm('You are not registered. Would you like to register now?')) {
+            window.location.href = 'register_patient.html';
+          } else {
+            document.getElementById('patient-name').textContent = 'Patient';
+          }
+        }
+      } catch (error) {
+        console.error('Error getting patient info:', error);
+        document.getElementById('patient-name').textContent = 'Patient';
+      }
+    }
+
+    // Get doctor info by PKH
+    async function getDoctorInfo(doctorPkh) {
+      // Check cache first
+      if (doctorCache.has(doctorPkh)) {
+        return doctorCache.get(doctorPkh);
+      }
+      
+      try {
+        const response = await fetch(`get_doctor_info.php?pkh=${encodeURIComponent(doctorPkh)}`);
+        const data = await response.json();
+        
+        let doctor;
+        if (data.success && data.doctor) {
+          doctor = data.doctor;
+        } else {
+          doctor = {
+            pkh: doctorPkh,
+            name: 'Unknown Doctor',
+            specialization: 'General Practitioner',
+            hospital: 'Medical Center',
+            rating: 0
+          };
+        }
+        
+        // Cache the result
+        doctorCache.set(doctorPkh, doctor);
+        return doctor;
+      } catch (error) {
+        console.error('Error getting doctor info:', error);
+        const fallbackDoctor = {
+          pkh: doctorPkh,
+          name: 'Unknown Doctor',
+          specialization: 'General Practitioner',
+          hospital: 'Medical Center',
+          rating: 0
+        };
+        doctorCache.set(doctorPkh, fallbackDoctor);
+        return fallbackDoctor;
+      }
+    }
+
+    // Search doctors by name or specialization
+    async function searchDoctors(searchTerm) {
+      if (!searchTerm || searchTerm.length < 2) {
+        return [];
+      }
+      
+      try {
+        const response = await fetch(`search_doctors.php?term=${encodeURIComponent(searchTerm)}`);
+        const data = await response.json();
+        
+        if (data.success && data.doctors && data.doctors.length > 0) {
+          return data.doctors;
+        }
+        return [];
+      } catch (error) {
+        console.error('Error searching doctors:', error);
+        return [];
+      }
+    }
+
+    window.loadPatientDashboard = async function() {
+      if (!lucid || !walletPkh) return;
+      
+      try {
+        const utxos = await lucid.utxosAt(scriptAddress);
+        
+        // Get patient's records
+        myRecords = utxos.filter(u => {
+          if (!u.datum) return false;
+          try {
+            const d = Data.from(u.datum, EMRDatum);
+            return d.patient === walletPkh;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        // Update stats
+        document.getElementById('total-records').textContent = myRecords.length;
+        document.getElementById('pending-results').textContent = myRecords.filter(r => {
+          try {
+            const d = Data.from(r.datum, EMRDatum);
+            return !d.resolved;
+          } catch (e) {
+            return false;
+          }
+        }).length;
+        
+        // Load appointments from localStorage
+        loadAppointments();
+        
+        // Load prescriptions from localStorage
+        await loadPrescriptions();
+        
+        // Load my doctors
+        await loadMyDoctors();
+        
+        // Find next check-up
+        findNextCheckup(myRecords);
+        
+        // Show recent records
+        showRecentRecords(myRecords.slice(0, 3));
+        
+        // Show health timeline
+        showHealthTimeline(myRecords);
+        
+        // Show recent prescriptions
+        showRecentPrescriptions();
+        
+      } catch (error) {
+        console.error("Error loading patient dashboard:", error);
+        window.log(`Error loading dashboard: ${error.message}`, true);
+      }
+    }
+
+    // Load prescriptions from localStorage
+    async function loadPrescriptions() {
+      if (!walletPkh) return;
+      
+      try {
+        const allPrescriptions = JSON.parse(localStorage.getItem('allPrescriptions') || '[]');
+        
+        // Filter prescriptions for this patient
+        prescriptions = allPrescriptions.filter(p => p.patient === walletPkh);
+        
+        // Get doctor names
+        const doctorPkhs = [...new Set(prescriptions.map(p => p.doctor))];
+        const doctorPromises = doctorPkhs.map(pkh => getDoctorInfo(pkh));
+        const doctorResults = await Promise.all(doctorPromises);
+        const doctorMap = new Map(doctorResults.map(d => [d.pkh, d]));
+        
+        // Add doctor names to prescriptions
+        prescriptions = prescriptions.map(p => ({
+          ...p,
+          doctorName: doctorMap.get(p.doctor)?.name || 'Unknown Doctor'
+        }));
+        
+        // Sort by date (most recent first)
+        prescriptions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Update count
+        const activeCount = prescriptions.filter(p => new Date(p.expiry) >= new Date()).length;
+        document.getElementById('prescriptions-count').textContent = activeCount;
+        
+      } catch (error) {
+        console.error("Error loading prescriptions:", error);
+      }
+    }
+
+    // Show recent prescriptions in dashboard
+    function showRecentPrescriptions() {
+      const container = document.getElementById('prescriptions-list');
+      if (!container) return;
+      
+      const now = new Date();
+      const activePrescriptions = prescriptions.filter(p => new Date(p.expiry) >= now);
+      
+      if (activePrescriptions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No active prescriptions</div>';
+        return;
+      }
+      
+      let html = '';
+      activePrescriptions.slice(0, 3).forEach(p => {
+        const expiryDate = new Date(p.expiry);
+        const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+        
+        html += `
+          <div class="prescription-card" onclick="window.viewPrescriptionDetails('${p.id}')">
+            <div class="prescription-header">
+              <span class="prescription-doctor">Dr. ${p.doctorName}</span>
+              <span class="prescription-status status-active">Active</span>
+            </div>
+            <div class="prescription-medicines">
+              ${p.medicines.slice(0, 2).map(m => `
+                <div class="medicine-item">
+                  <span class="medicine-name">${m.name}</span>
+                  <span class="medicine-details">${m.dosage} - ${m.frequency}</span>
+                </div>
+              `).join('')}
+              ${p.medicines.length > 2 ? `<div style="text-align: center; font-size: 11px; color: #718096; margin-top: 5px;">+${p.medicines.length - 2} more medicines</div>` : ''}
+            </div>
+            <div class="prescription-footer">
+              <span>Issued: ${new Date(p.date).toLocaleDateString()}</span>
+              <span>Expires in ${daysLeft} days</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      if (activePrescriptions.length > 3) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096; font-size: 12px;">+${activePrescriptions.length - 3} more active prescriptions</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Show prescriptions modal
+    window.showPrescriptionsModal = function() {
+      const modal = document.getElementById('prescriptions-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        window.showPrescriptionTab('active');
+      }
+    }
+
+    window.closePrescriptionsModal = function() {
+      const modal = document.getElementById('prescriptions-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Show prescription tab in modal
+    window.showPrescriptionTab = async function(tab) {
+      document.querySelectorAll('.prescription-tab').forEach(btn => btn.classList.remove('active'));
+      const tabBtn = document.getElementById(`tab-${tab}`);
+      if (tabBtn) tabBtn.classList.add('active');
+      
+      const container = document.getElementById('all-prescriptions-list');
+      if (!container) return;
+      
+      const now = new Date();
+      let filteredPrescriptions = [];
+      
+      if (tab === 'active') {
+        filteredPrescriptions = prescriptions.filter(p => new Date(p.expiry) >= now);
+      } else if (tab === 'expired') {
+        filteredPrescriptions = prescriptions.filter(p => new Date(p.expiry) < now);
+      } else {
+        filteredPrescriptions = prescriptions;
+      }
+      
+      if (filteredPrescriptions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No prescriptions found</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const p of filteredPrescriptions) {
+        const isExpired = new Date(p.expiry) < now;
+        const statusClass = isExpired ? 'status-expired' : 'status-active';
+        const statusText = isExpired ? 'Expired' : 'Active';
+        const cardClass = isExpired ? 'prescription-card expired' : 'prescription-card';
+        
+        const expiryDate = new Date(p.expiry);
+        const daysLeft = isExpired ? 0 : Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+        
+        html += `
+          <div class="${cardClass}" onclick="window.viewPrescriptionDetails('${p.id}')">
+            <div class="prescription-header">
+              <div>
+                <span class="prescription-doctor">Dr. ${p.doctorName}</span>
+                <span style="font-size: 12px; color: #718096; margin-left: 10px;">${p.diagnosis || 'Prescription'}</span>
+              </div>
+              <span class="prescription-status ${statusClass}">${statusText}</span>
+            </div>
+            
+            <div class="prescription-medicines">
+              ${p.medicines.map(m => `
+                <div class="medicine-item">
+                  <span class="medicine-name">${m.name}</span>
+                  <span class="medicine-details">${m.dosage} - ${m.frequency} for ${m.duration} days</span>
+                </div>
+              `).join('')}
+            </div>
+            
+            ${p.instructions ? `
+              <div class="prescription-instructions">
+                📝 ${p.instructions}
+              </div>
+            ` : ''}
+            
+            <div class="prescription-footer">
+              <span>Issued: ${new Date(p.date).toLocaleDateString()}</span>
+              <span>Expires: ${new Date(p.expiry).toLocaleDateString()}</span>
+              ${!isExpired ? `<span class="refill-badge">${daysLeft} days left</span>` : ''}
+            </div>
+            
+            ${p.allowRefills ? `
+              <div style="margin-top: 5px; font-size: 11px; color: #9f7aea;">
+                ✨ Refills available: ${p.refillsUsed}/${p.refills}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // View prescription details
+    window.viewPrescriptionDetails = function(prescriptionId) {
+      const prescription = prescriptions.find(p => p.id === prescriptionId);
+      if (!prescription) return;
+      
+      const modal = document.getElementById('prescription-details-modal');
+      const content = document.getElementById('prescription-details-content');
+      
+      const now = new Date();
+      const isExpired = new Date(prescription.expiry) < now;
+      const statusText = isExpired ? 'Expired' : 'Active';
+      const statusColor = isExpired ? '#f56565' : '#48bb78';
+      
+      const expiryDate = new Date(prescription.expiry);
+      const daysLeft = isExpired ? 0 : Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+      
+      let medicinesHtml = '<ul style="margin-top: 15px; padding-left: 20px;">';
+      prescription.medicines.forEach(m => {
+        medicinesHtml += `<li style="margin-bottom: 8px;"><strong>${m.name}</strong> - ${m.dosage} (${m.frequency}) for ${m.duration} days</li>`;
+      });
+      medicinesHtml += '</ul>';
+      
+      content.innerHTML = `
+        <div style="padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h4 style="margin: 0;">Prescription from Dr. ${prescription.doctorName}</h4>
+            <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 4px;">${statusText}</span>
+          </div>
+          
+          <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p><strong>Prescription ID:</strong> ${prescription.id}</p>
+            <p><strong>Date Issued:</strong> ${new Date(prescription.date).toLocaleDateString()}</p>
+            <p><strong>Expiry Date:</strong> ${new Date(prescription.expiry).toLocaleDateString()}</p>
+            ${!isExpired ? `<p><strong>Days Remaining:</strong> ${daysLeft} days</p>` : ''}
+            ${prescription.diagnosis ? `<p><strong>Diagnosis:</strong> ${prescription.diagnosis}</p>` : ''}
+          </div>
+          
+          <h5 style="margin: 15px 0 10px 0;">Medicines:</h5>
+          ${medicinesHtml}
+          
+          ${prescription.instructions ? `
+            <div style="margin-top: 20px;">
+              <strong>Instructions:</strong>
+              <p style="background: #ebf8ff; padding: 15px; border-radius: 4px; margin-top: 5px;">${prescription.instructions}</p>
+            </div>
+          ` : ''}
+          
+          <div style="margin-top: 20px; display: flex; gap: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            ${prescription.allowRefills ? `
+              <div><strong>Refills:</strong> ${prescription.refillsUsed}/${prescription.refills} used</div>
+            ` : '<div><strong>Refills:</strong> Not allowed</div>'}
+            <div><strong>Doctor:</strong> Dr. ${prescription.doctorName}</div>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <button onclick="window.printPrescription('${prescription.id}')" class="btn-primary btn-small">🖨️ Print</button>
+            <button onclick="window.requestRefill('${prescription.id}')" class="btn-success btn-small" style="margin-left: 10px;" ${!prescription.allowRefills || prescription.refillsUsed >= prescription.refills ? 'disabled' : ''}>📞 Request Refill</button>
+          </div>
+        </div>
+      `;
+      
+      modal.style.display = 'flex';
+    }
+
+    window.closePrescriptionDetailsModal = function() {
+      const modal = document.getElementById('prescription-details-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Print prescription
+    window.printPrescription = function(prescriptionId) {
+      const prescription = prescriptions.find(p => p.id === prescriptionId);
+      if (!prescription) return;
+      
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>Prescription - ${prescription.patientName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .title { font-size: 24px; color: #2d3748; }
+            .doctor-info { margin: 20px 0; padding: 20px; background: #f7fafc; border-radius: 8px; }
+            .medicine { margin: 10px 0; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+            .footer { margin-top: 40px; text-align: center; color: #718096; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">💊 Medical Prescription</div>
+            <p>EMR Pro - Blockchain Medical Records</p>
+          </div>
+          
+          <div class="doctor-info">
+            <p><strong>Doctor:</strong> Dr. ${prescription.doctorName}</p>
+            <p><strong>Patient:</strong> ${prescription.patientName}</p>
+            <p><strong>Date:</strong> ${new Date(prescription.date).toLocaleDateString()}</p>
+            <p><strong>Expiry:</strong> ${new Date(prescription.expiry).toLocaleDateString()}</p>
+            ${prescription.diagnosis ? `<p><strong>Diagnosis:</strong> ${prescription.diagnosis}</p>` : ''}
+          </div>
+          
+          <h3>Prescribed Medicines:</h3>
+          ${prescription.medicines.map(m => `
+            <div class="medicine">
+              <p><strong>${m.name}</strong> - ${m.dosage}</p>
+              <p>Frequency: ${m.frequency} for ${m.duration} days</p>
+            </div>
+          `).join('')}
+          
+          ${prescription.instructions ? `
+            <div style="margin-top: 20px; padding: 15px; background: #ebf8ff; border-radius: 4px;">
+              <strong>Instructions:</strong>
+              <p>${prescription.instructions}</p>
+            </div>
+          ` : ''}
+          
+          ${prescription.allowRefills ? `
+            <p style="margin-top: 20px;"><strong>Refills:</strong> ${prescription.refills} allowed</p>
+          ` : ''}
+          
+          <div class="footer">
+            <p>This is a computer-generated prescription from EMR Pro</p>
+            <p>Prescription ID: ${prescription.id}</p>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    // Request refill
+    window.requestRefill = function(prescriptionId) {
+      const prescription = prescriptions.find(p => p.id === prescriptionId);
+      if (!prescription) return;
+      
+      if (!prescription.allowRefills || prescription.refillsUsed >= prescription.refills) {
+        window.log("❌ No refills available", true);
+        return;
+      }
+      
+      // Create a refill request appointment
+      const appointment = {
+        id: 'apt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        doctor: prescription.doctor,
+        doctorName: prescription.doctorName,
+        patient: walletPkh,
+        patientName: patientInfo ? patientInfo.name : 'Patient',
+        date: new Date().toISOString().split('T')[0],
+        time: '09:00',
+        reason: 'Prescription Refill',
+        notes: `Refill request for prescription: ${prescription.id}`,
+        status: 'pending',
+        requestedAt: new Date().toISOString()
+      };
+      
+      // Save to appointments
+      const allAppointments = JSON.parse(localStorage.getItem('allAppointments') || '[]');
+      allAppointments.push(appointment);
+      localStorage.setItem('allAppointments', JSON.stringify(allAppointments));
+      
+      window.log(`✅ Refill request sent to Dr. ${prescription.doctorName}`);
+      window.closePrescriptionDetailsModal();
+    }
+
+    // Load my doctors (from appointments and prescriptions)
+    async function loadMyDoctors() {
+      try {
+        // Get doctors from appointments
+        const doctorPkhs = new Set();
+        appointments.forEach(apt => {
+          if (apt.doctor) doctorPkhs.add(apt.doctor);
+        });
+        
+        // Also add doctors from prescriptions
+        prescriptions.forEach(p => {
+          if (p.doctor) doctorPkhs.add(p.doctor);
+        });
+        
+        if (doctorPkhs.size === 0) {
+          document.getElementById('my-doctors-list').innerHTML = '<div class="empty-state">No doctors yet</div>';
+          return;
+        }
+        
+        // Fetch doctor details
+        const doctorPromises = Array.from(doctorPkhs).map(pkh => getDoctorInfo(pkh));
+        const doctorResults = await Promise.all(doctorPromises);
+        
+        myDoctors = doctorResults.filter(doctor => doctor !== null);
+        
+        displayMyDoctors();
+      } catch (error) {
+        console.error('Error loading doctors:', error);
+        document.getElementById('my-doctors-list').innerHTML = '<div class="empty-state">Error loading doctors</div>';
+      }
+    }
+
+    function displayMyDoctors() {
+      const container = document.getElementById('my-doctors-list');
+      
+      if (myDoctors.length === 0) {
+        container.innerHTML = '<div class="empty-state">No doctors yet</div>';
+        return;
+      }
+      
+      let html = '';
+      myDoctors.slice(0, 5).forEach(doctor => {
+        const doctorName = doctor.name || 'Unknown Doctor';
+        const specialization = doctor.specialization || 'General Practitioner';
+        const hospital = doctor.hospital || 'Medical Center';
+        const pkh = doctor.pkh || doctor.doctorPkh || '';
+        const initial = doctorName.charAt(0) || 'D';
+        
+        html += `
+          <div class="doctor-list-item">
+            <div class="doctor-avatar">${initial}</div>
+            <div class="doctor-list-content">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="font-size: 14px;">Dr. ${doctorName}</strong>
+                  <span class="specialty-badge">${specialization}</span>
+                </div>
+              </div>
+              <div class="doctor-details">
+                🏥 ${hospital}
+              </div>
+            </div>
+            <button onclick="window.selectDoctorForAppointment('${pkh}', '${doctorName.replace(/'/g, "\\'")}')" class="btn-small" style="margin-left: 10px;">
+              Request
+            </button>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    function findNextCheckup(records) {
+      const container = document.getElementById('next-checkup-details');
+      if (!container) return;
+      
+      // Check for upcoming appointments (exclude rejected)
+      const now = new Date();
+      const upcomingAppointments = appointments.filter(apt => {
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        return aptDate > now && apt.status === 'confirmed';
+      }).sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+      
+      // Check for any rejected appointments to show warning
+      const rejectedCount = appointments.filter(apt => apt.status === 'rejected').length;
+      
+      if (upcomingAppointments.length > 0) {
+        const next = upcomingAppointments[0];
+        const aptDate = new Date(next.date + 'T' + next.time);
+        
+        // Get doctor name
+        getDoctorInfo(next.doctor).then(doctor => {
+          const doctorName = doctor ? doctor.name : (next.doctorName || 'Doctor');
+          container.innerHTML = `
+            <p class="checkup-date">📅 ${aptDate.toLocaleDateString()} at ${next.time}</p>
+            <p class="checkup-doctor">Dr. ${doctorName}</p>
+            <button onclick="window.showAppointmentModal()" class="btn-small" style="margin-top: 5px;">Reschedule</button>
+            ${rejectedCount > 0 ? `<p style="color: #e53e3e; font-size: 11px; margin-top: 5px;">⚠️ ${rejectedCount} appointment${rejectedCount > 1 ? 's were' : ' was'} rejected</p>` : ''}
+          `;
+        });
+      } else {
+        container.innerHTML = `
+          <p class="checkup-date">No upcoming check-ups</p>
+          <button onclick="window.showAppointmentModal()" class="btn-small" style="margin-top: 5px;">Request</button>
+          ${rejectedCount > 0 ? `<p style="color: #e53e3e; font-size: 11px; margin-top: 5px;">⚠️ ${rejectedCount} appointment${rejectedCount > 1 ? 's were' : ' was'} rejected</p>` : ''}
+        `;
+      }
+    }
+
+    function showRecentRecords(records) {
+      const container = document.getElementById('recent-records-list');
+      if (!container) return;
+      
+      if (records.length === 0) {
+        container.innerHTML = '<div class="empty-state">No recent records</div>';
+        return;
+      }
+      
+      // Clear container first
+      container.innerHTML = '';
+      
+      // Process records sequentially
+      let processedCount = 0;
+      records.forEach(async r => {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          const txDate = new Date(parseInt(r.txHash.substring(0, 8), 16) * 1000);
+          
+          // Get doctor name
+          const doctor = await getDoctorInfo(d.doctor);
+          const doctorName = doctor ? doctor.name : 'Doctor';
+          
+          const recordHtml = `
+            <div class="record-item" style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between;">
+                <div>
+                  <span style="font-weight: bold;">Dr. ${doctorName}</span>
+                  <span style="font-size: 12px; color: #718096; margin-left: 10px;">${txDate.toLocaleDateString()}</span>
+                </div>
+                <span style="background: ${d.resolved ? '#48bb78' : '#f6ad55'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+                  ${d.resolved ? '✓ Resolved' : '○ Active'}
+                </span>
+              </div>
+              <div style="font-size: 12px; color: #718096; margin-top: 5px;">
+                Record ID: ${d.recordHash.substring(0, 16)}...
+              </div>
+            </div>
+          `;
+          
+          container.innerHTML += recordHtml;
+          processedCount++;
+        } catch (e) {
+          console.error(e);
+          processedCount++;
+        }
+      });
+    }
+
+    function showHealthTimeline(records) {
+      const container = document.getElementById('health-timeline');
+      if (!container) return;
+      
+      if (records.length === 0) {
+        container.innerHTML = '<div class="empty-state">No timeline data</div>';
+        return;
+      }
+      
+      // Sort by date (most recent first)
+      const sorted = records.sort((a, b) => 
+        parseInt(b.txHash.substring(0, 8), 16) - parseInt(a.txHash.substring(0, 8), 16)
+      ).slice(0, 5);
+      
+      container.innerHTML = '<div class="timeline"></div>';
+      const timelineDiv = container.querySelector('.timeline');
+      
+      // Process records sequentially
+      sorted.forEach(async r => {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          const date = new Date(parseInt(r.txHash.substring(0, 8), 16) * 1000);
+          
+          // Get doctor name
+          const doctor = await getDoctorInfo(d.doctor);
+          const doctorName = doctor ? doctor.name : 'Doctor';
+          
+          const timelineHtml = `
+            <div class="timeline-item" style="margin-bottom: 15px; padding-left: 20px; border-left: 2px solid #4299e1;">
+              <div style="font-weight: bold; color: #2d3748;">${date.toLocaleDateString()}</div>
+              <div style="color: #4a5568;">Dr. ${doctorName}</div>
+              <div style="font-size: 12px; color: #718096;">Record ID: ${d.recordHash.substring(0, 20)}...</div>
+            </div>
+          `;
+          
+          timelineDiv.innerHTML += timelineHtml;
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
+
+    // Doctor selection functions
+    window.searchDoctorsByTerm = async function(searchTerm) {
+      const container = document.getElementById('doctors-list');
+      if (!container) return;
+      
+      if (!searchTerm || searchTerm.length < 2) {
+        container.innerHTML = '<div class="loading-doctors">Enter at least 2 characters to search</div>';
+        return;
+      }
+      
+      container.innerHTML = '<div class="loading-doctors">Searching...</div>';
+      
+      const doctors = await searchDoctors(searchTerm);
+      
+      if (doctors.length === 0) {
+        container.innerHTML = '<div class="no-doctors-found">No doctors found matching your search</div>';
+        return;
+      }
+      
+      let html = '';
+      doctors.forEach(doctor => {
+        const doctorName = doctor.name || 'Unknown Doctor';
+        const specialization = doctor.specialization || 'General Practitioner';
+        const hospital = doctor.hospital || 'Medical Center';
+        const initial = doctorName.charAt(0) || 'D';
+        
+        html += `
+          <div class="doctor-item" onclick="window.selectDoctor('${doctor.pkh}', '${doctorName.replace(/'/g, "\\'")}', '${specialization}')" 
+               style="padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center;">
+            <div class="doctor-avatar" style="margin-right: 12px;">${initial}</div>
+            <div style="flex: 1;">
+              <div>
+                <strong>Dr. ${doctorName}</strong>
+                <span class="specialty-badge">${specialization}</span>
+              </div>
+              <div style="font-size: 12px; color: #718096; margin-top: 5px;">
+                🏥 ${hospital}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    window.selectDoctor = function(pkh, name, specialization) {
+      document.getElementById('appointment-doctor').value = pkh;
+      document.getElementById('selected-doctor-name').innerHTML = `<strong>Selected:</strong> Dr. ${name} (${specialization})`;
+      document.getElementById('selected-doctor-info').style.display = 'flex';
+      
+      // Highlight selected doctor
+      document.querySelectorAll('.doctor-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+      }
+    }
+
+    window.selectDoctorForAppointment = function(pkh, name) {
+      window.closeFindDoctorModal();
+      window.showAppointmentModal();
+      
+      // Small timeout to ensure modal is open
+      setTimeout(async () => {
+        // Get full doctor details
+        const doctor = await getDoctorInfo(pkh);
+        const specialization = doctor ? doctor.specialization : 'General Practitioner';
+        
+        document.getElementById('appointment-doctor').value = pkh;
+        document.getElementById('selected-doctor-name').innerHTML = `<strong>Selected:</strong> Dr. ${name} (${specialization})`;
+        document.getElementById('selected-doctor-info').style.display = 'flex';
+      }, 100);
+    }
+
+    window.clearDoctorSelection = function() {
+      document.getElementById('appointment-doctor').value = '';
+      document.getElementById('selected-doctor-info').style.display = 'none';
+      document.querySelectorAll('.doctor-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+    }
+
+    // Find doctor modal
+    window.showFindDoctorModal = function() {
+      document.getElementById('find-doctor-modal').style.display = 'flex';
+      
+      const container = document.getElementById('all-doctors-list');
+      if (container) {
+        container.innerHTML = '<div class="loading-doctors">Type doctor name to search</div>';
+      }
+    }
+
+    window.closeFindDoctorModal = function() {
+      document.getElementById('find-doctor-modal').style.display = 'none';
+    }
+
+    window.searchFindDoctor = async function(searchTerm) {
+      const container = document.getElementById('all-doctors-list');
+      if (!container) return;
+      
+      if (!searchTerm || searchTerm.length < 2) {
+        container.innerHTML = '<div class="loading-doctors">Enter at least 2 characters to search</div>';
+        return;
+      }
+      
+      container.innerHTML = '<div class="loading-doctors">Searching...</div>';
+      
+      const doctors = await searchDoctors(searchTerm);
+      
+      if (doctors.length === 0) {
+        container.innerHTML = '<div class="no-doctors-found">No doctors found matching your search</div>';
+        return;
+      }
+      
+      let html = '';
+      doctors.forEach(doctor => {
+        const doctorName = doctor.name || 'Unknown Doctor';
+        const specialization = doctor.specialization || 'General Practitioner';
+        const hospital = doctor.hospital || 'Medical Center';
+        const initial = doctorName.charAt(0) || 'D';
+        
+        html += `
+          <div class="doctor-card">
+            <div style="display: flex; align-items: center; flex: 1;">
+              <div class="doctor-avatar">${initial}</div>
+              <div class="doctor-info">
+                <h4>Dr. ${doctorName}</h4>
+                <div class="doctor-details">${specialization}</div>
+                <div class="doctor-details">🏥 ${hospital}</div>
+                ${doctor.email ? `<div class="doctor-details">📧 ${doctor.email}</div>` : ''}
+              </div>
+            </div>
+            <button onclick="window.selectDoctorForAppointment('${doctor.pkh}', '${doctorName.replace(/'/g, "\\'")}')" class="doctor-select-btn">
+              Select
+            </button>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Appointment Functions
+    window.showAppointmentModal = function() {
+      // Set min date to today
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('appointment-date');
+      if (dateInput) dateInput.min = today;
+      document.getElementById('appointment-modal').style.display = 'flex';
+      
+      // Add search functionality
+      const searchInput = document.getElementById('doctor-search');
+      if (searchInput) {
+        // Remove existing listener to avoid duplicates
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', debounce(function(e) {
+          window.searchDoctorsByTerm(e.target.value);
+        }, 500));
+      }
+    }
+    
+    window.closeAppointmentModal = function() {
+      document.getElementById('appointment-modal').style.display = 'none';
+      // Clear form
+      document.getElementById('appointment-doctor').value = '';
+      document.getElementById('appointment-date').value = '';
+      document.getElementById('appointment-notes').value = '';
+      document.getElementById('selected-doctor-info').style.display = 'none';
+      document.getElementById('doctors-list').innerHTML = '<div class="loading-doctors">Start typing to search for doctors...</div>';
+    }
+    
+    window.requestAppointment = async function() {
+      const doctor = document.getElementById('appointment-doctor').value;
+      const date = document.getElementById('appointment-date').value;
+      const time = document.getElementById('appointment-time').value;
+      const reason = document.getElementById('appointment-reason').value;
+      const notes = document.getElementById('appointment-notes').value.trim();
+      
+      if (!doctor) {
+        window.log("❌ Please select a doctor", true);
+        return;
+      }
+      
+      if (!date || !time) {
+        window.log("❌ Please fill in all required fields", true);
+        return;
+      }
+      
+      if (!lucid) {
+        window.log("❌ Please connect wallet first", true);
+        return;
+      }
+      
+      try {
+        window.log("📅 Requesting appointment...");
+        
+        // Get doctor name for display
+        const doctorInfo = await getDoctorInfo(doctor);
+        const doctorName = doctorInfo ? doctorInfo.name : 'Doctor';
+        
+        // Create appointment object
+        const appointment = {
+          id: 'apt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          doctor: doctor,
+          doctorName: doctorName,
+          patient: walletPkh,
+          patientName: patientInfo ? patientInfo.name : 'Patient',
+          date: date,
+          time: time,
+          reason: reason,
+          notes: notes,
+          status: 'pending',
+          requestedAt: new Date().toISOString()
+        };
+        
+        // Save to GLOBAL appointments storage
+        const allAppointments = JSON.parse(localStorage.getItem('allAppointments') || '[]');
+        allAppointments.push(appointment);
+        localStorage.setItem('allAppointments', JSON.stringify(allAppointments));
+        
+        // Also save to patient's personal storage
+        const patientAppointments = JSON.parse(localStorage.getItem('appointments_' + walletPkh) || '[]');
+        patientAppointments.push(appointment);
+        localStorage.setItem('appointments_' + walletPkh, JSON.stringify(patientAppointments));
+        
+        window.log(`✅ Appointment requested successfully with Dr. ${doctorName}!`);
+        
+        // Update appointments list
+        loadAppointments();
+        
+        // Close modal
+        window.closeAppointmentModal();
+        
+        // Reload dashboard
+        await loadPatientDashboard();
+        
+      } catch (error) {
+        window.log(`❌ Failed to request appointment: ${error.message}`, true);
+      }
+    }
+    
+    function loadAppointments() {
+      if (!walletPkh) return;
+      
+      try {
+        // Load from GLOBAL storage first
+        const allAppointments = JSON.parse(localStorage.getItem('allAppointments') || '[]');
+        
+        // Filter appointments for this patient
+        appointments = allAppointments.filter(apt => 
+          apt.patient === walletPkh || (apt.patient && apt.patient.includes(walletPkh.substring(0, 15)))
+        );
+        
+        // If no appointments found, check patient-specific storage
+        if (appointments.length === 0) {
+          const saved = localStorage.getItem('appointments_' + walletPkh);
+          if (saved) {
+            appointments = JSON.parse(saved);
+            // Migrate to global storage
+            appointments.forEach(apt => {
+              if (!allAppointments.some(a => a.id === apt.id)) {
+                allAppointments.push(apt);
+              }
+            });
+            localStorage.setItem('allAppointments', JSON.stringify(allAppointments));
+          }
+        }
+        
+        updateAppointmentsList();
+        updateRejectedSection();
+        
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+      }
+    }
+    
+    function updateAppointmentsList() {
+      const container = document.getElementById('appointments-list');
+      if (!container) return;
+      
+      const now = new Date();
+      
+      // Sort and filter appointments - include rejected status
+      const upcoming = appointments.filter(apt => {
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        return aptDate > now && apt.status !== 'rejected';
+      }).sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+      
+      // Get rejected appointments
+      const rejected = appointments.filter(apt => apt.status === 'rejected');
+      
+      document.getElementById('appointment-count').textContent = upcoming.length;
+      document.getElementById('upcoming-appointments').textContent = upcoming.length;
+      document.getElementById('rejected-count').textContent = rejected.length;
+      
+      if (upcoming.length === 0 && rejected.length === 0) {
+        container.innerHTML = '<div class="empty-state">No upcoming appointments</div>';
+        return;
+      }
+      
+      let html = '';
+      
+      // Show warning banner if there are rejected appointments
+      if (rejected.length > 0) {
+        html += `
+          <div class="warning-banner">
+            <span style="font-size: 20px;">⚠️</span>
+            <div>
+              <strong>${rejected.length} appointment${rejected.length > 1 ? 's have' : ' has'} been rejected</strong>
+              <p style="font-size: 12px; margin-top: 5px;">Please request a new appointment with a different time or doctor.</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Show upcoming appointments
+      upcoming.slice(0, 3).forEach(apt => {
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        const statusColor = apt.status === 'confirmed' ? '#48bb78' : '#f6ad55';
+        const statusText = apt.status === 'confirmed' ? '✓ Confirmed' : '⏳ Pending';
+        
+        html += `
+          <div class="appointment-item" style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: bold;">${aptDate.toLocaleDateString()} at ${apt.time}</div>
+                <div style="font-size: 12px; color: #718096;">Dr. ${apt.doctorName || 'Doctor'}</div>
+                <div style="font-size: 12px; color: #718096;">${apt.reason || 'Check-up'}</div>
+                ${apt.notes ? `<div style="font-size: 11px; color: #718096;">📝 ${apt.notes.substring(0, 30)}...</div>` : ''}
+              </div>
+              <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                ${statusText}
+              </span>
+            </div>
+          </div>
+        `;
+      });
+      
+      if (upcoming.length > 3) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096; font-size: 12px;">+${upcoming.length - 3} more appointments</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    function updateRejectedSection() {
+      const rejectedSection = document.getElementById('rejected-section');
+      const rejectedContainer = document.getElementById('rejected-appointments-list');
+      const rejected = appointments.filter(apt => apt.status === 'rejected');
+      
+      if (rejected.length === 0) {
+        rejectedSection.style.display = 'none';
+        return;
+      }
+      
+      rejectedSection.style.display = 'block';
+      document.getElementById('rejected-section-count').textContent = rejected.length;
+      
+      let html = '';
+      rejected.forEach(apt => {
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        html += `
+          <div class="appointment-item" style="padding: 12px; border-bottom: 1px solid #feb2b2; background: #fff5f5;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: bold;">${aptDate.toLocaleDateString()} at ${apt.time}</div>
+                <div style="font-size: 12px; color: #718096;">Dr. ${apt.doctorName || 'Doctor'}</div>
+                <div style="font-size: 12px; color: #718096;">${apt.reason || 'Check-up'}</div>
+                ${apt.notes ? `<div style="font-size: 11px; color: #718096;">📝 ${apt.notes.substring(0, 30)}...</div>` : ''}
+                <div style="font-size: 10px; color: #e53e3e; margin-top: 5px;">
+                  ❌ Rejected on ${new Date(apt.rejectedAt || apt.requestedAt).toLocaleDateString()}
+                </div>
+              </div>
+              <span class="rejected-badge">Rejected</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      rejectedContainer.innerHTML = html;
+    }
+
+    // Debounce function for search
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // EMERGENCY FUNCTIONS - USER FRIENDLY
+    window.showEmergencyModal = function() {
+      document.getElementById('emergency-modal').style.display = 'flex';
+      
+      // Load doctors for selection
+      loadEmergencyDoctors();
+      
+      // Add reason select listener
+      const reasonSelect = document.getElementById('emergency-reason-select');
+      reasonSelect.addEventListener('change', function() {
+        const otherContainer = document.getElementById('other-reason-container');
+        otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+      });
+      
+      // Add doctor search
+      const searchInput = document.getElementById('emergency-doctor-search');
+      if (searchInput) {
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', debounce(async function(e) {
+          const searchTerm = e.target.value;
+          if (searchTerm.length < 2) {
+            loadEmergencyDoctors();
+            return;
+          }
+          
+          const doctors = await searchDoctors(searchTerm);
+          displayEmergencyDoctors(doctors);
+        }, 500));
+      }
+    }
+
+    async function loadEmergencyDoctors() {
+      // Get unique doctors from appointments and prescriptions
+      const doctorPkhs = new Set();
+      
+      appointments.forEach(apt => {
+        if (apt.doctor) doctorPkhs.add(apt.doctor);
+      });
+      
+      prescriptions.forEach(p => {
+        if (p.doctor) doctorPkhs.add(p.doctor);
+      });
+      
+      if (doctorPkhs.size === 0) {
+        document.getElementById('emergency-doctor-list').innerHTML = '<div class="empty-state">No doctors found. Please add a doctor first.</div>';
+        return;
+      }
+      
+      const doctorPromises = Array.from(doctorPkhs).map(pkh => getDoctorInfo(pkh));
+      const doctors = await Promise.all(doctorPromises);
+      displayEmergencyDoctors(doctors);
+    }
+
+    function displayEmergencyDoctors(doctors) {
+      const container = document.getElementById('emergency-doctor-list');
+      
+      if (doctors.length === 0) {
+        container.innerHTML = '<div class="empty-state">No doctors found</div>';
+        return;
+      }
+      
+      let html = '';
+      doctors.forEach(doctor => {
+        const doctorName = doctor.name || 'Unknown Doctor';
+        const specialization = doctor.specialization || 'General Practitioner';
+        
+        html += `
+          <div class="doctor-item" onclick="window.selectEmergencyDoctor('${doctor.pkh}', '${doctorName.replace(/'/g, "\\'")}')" 
+               style="padding: 10px; border-bottom: 1px solid #e2e8f0; cursor: pointer;">
+            <div style="display: flex; align-items: center;">
+              <div style="flex: 1;">
+                <strong>Dr. ${doctorName}</strong>
+                <span class="specialty-badge">${specialization}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    window.selectEmergencyDoctor = function(doctorPkh, doctorName) {
+      document.getElementById('emergency-doctor-pkh').value = doctorPkh;
+      document.getElementById('emergency-doctor-search').value = `Dr. ${doctorName}`;
+      document.getElementById('emergency-doctor-list').innerHTML = '<div class="loading-doctors">Loading your records...</div>';
+      
+      // Load records for this doctor
+      loadEmergencyRecords(doctorPkh);
+    }
+
+    async function loadEmergencyRecords(doctorPkh) {
+      const container = document.getElementById('emergency-records-list');
+      
+      // Filter records by this doctor
+      const doctorRecords = myRecords.filter(u => {
+        try {
+          const d = Data.from(u.datum, EMRDatum);
+          return d.doctor === doctorPkh;
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      if (doctorRecords.length === 0) {
+        container.innerHTML = '<div class="empty-state">No records found with this doctor</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const r of doctorRecords) {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          const txDate = new Date(parseInt(r.txHash.substring(0, 8), 16) * 1000);
+          
+          html += `
+            <div class="record-card" onclick="window.selectEmergencyRecord('${d.recordHash}', '${txDate.toLocaleDateString()}')">
+              <div class="record-header">
+                <span class="record-doctor">Medical Record</span>
+                <span class="record-date">${txDate.toLocaleDateString()}</span>
+              </div>
+              <div class="record-details">
+                <div>Status: ${d.resolved ? 'Resolved' : 'Active'}</div>
+                <div style="font-size: 11px; color: #718096; margin-top: 5px;">ID: ${d.recordHash.substring(0, 20)}...</div>
+              </div>
+            </div>
+          `;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      
+      container.innerHTML = html;
+    }
+
+    window.selectEmergencyRecord = function(recordHash, date) {
+      document.getElementById('emergency-record-hash').value = recordHash;
+      document.getElementById('selected-record-details').innerHTML = `Record from ${date}<br><small style="font-size: 11px;">${recordHash.substring(0, 30)}...</small>`;
+      document.getElementById('selected-emergency-info').style.display = 'block';
+    }
+
+    window.requestEmergencyAccess = async function() {
+      const recordHash = document.getElementById('emergency-record-hash').value;
+      const doctorPkh = document.getElementById('emergency-doctor-pkh').value;
+      let reason = document.getElementById('emergency-reason-select').value;
+      
+      if (reason === 'Other') {
+        reason = document.getElementById('other-reason').value.trim();
+      }
+      
+      if (!recordHash || !doctorPkh) {
+        window.log("❌ Please select a doctor and record", true);
+        return;
+      }
+
+      if (!reason) {
+        window.log("❌ Please provide an emergency reason", true);
+        return;
+      }
+      
+      if (!lucid || !walletPkh) {
+        window.log("❌ Please connect wallet first", true);
+        return;
+      }
+      
+      try {
+        window.log("🚨 EMERGENCY ACCESS REQUESTED");
+        window.log(`Record: ${recordHash.substring(0, 20)}...`);
+        window.log(`Reason: ${reason}`);
+        
+        // Get all UTXOs at script address
+        const utxos = await lucid.utxosAt(scriptAddress);
+        
+        // Find the record
+        const recordUtxo = utxos.find(u => {
+          if (!u.datum) return false;
+          try {
+            const d = Data.from(u.datum, EMRDatum);
+            return d.recordHash === recordHash;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        if (!recordUtxo) {
+          window.log("❌ No record found with that hash", true);
+          return;
+        }
+
+        const d = Data.from(recordUtxo.datum, EMRDatum);
+        
+        // Get doctor info
+        const doctorInfo = await getDoctorInfo(doctorPkh);
+        const doctorName = doctorInfo ? doctorInfo.name : 'Unknown Doctor';
+        
+        // Check if user is authorized (patient)
+        const isAuthorized = (d.patient === walletPkh);
+        
+        // Log emergency access attempt
+        const emergencyLog = {
+          id: 'emergency_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          recordHash: recordHash,
+          doctor: doctorPkh,
+          doctorName: doctorName,
+          patient: walletPkh,
+          patientName: patientInfo ? patientInfo.name : 'You',
+          reason: reason,
+          isAuthorized: isAuthorized,
+          timestamp: new Date().toISOString(),
+          txHash: recordUtxo.txHash
+        };
+        
+        // Save emergency access log
+        const emergencyHistory = JSON.parse(localStorage.getItem('emergencyAccess_' + walletPkh) || '[]');
+        emergencyHistory.push(emergencyLog);
+        localStorage.setItem('emergencyAccess_' + walletPkh, JSON.stringify(emergencyHistory));
+        
+        // Display record information
+        window.log("📋 EMERGENCY ACCESS GRANTED");
+        window.log("─".repeat(60));
+        window.log(`Doctor: ${doctorName}`);
+        window.log(`Record Date: ${new Date(parseInt(recordUtxo.txHash.substring(0, 8), 16) * 1000).toLocaleDateString()}`);
+        window.log(`Status: ${d.resolved ? 'Resolved' : 'Active'}`);
+        window.log("─".repeat(60));
+        window.log(`⚠️ This access has been logged for audit`);
+        window.log(`Reason: ${reason}`);
+        window.log(`Time: ${new Date().toLocaleString()}`);
+        
+        // Clear form
+        document.getElementById('emergency-doctor-search').value = '';
+        document.getElementById('emergency-record-hash').value = '';
+        document.getElementById('emergency-doctor-pkh').value = '';
+        document.getElementById('selected-emergency-info').style.display = 'none';
+        document.getElementById('other-reason').value = '';
+        document.getElementById('emergency-reason-select').value = 'Medical Emergency';
+        document.getElementById('other-reason-container').style.display = 'none';
+        
+        // Close modal
+        window.closeEmergencyModal();
+        
+      } catch (error) {
+        window.log(`❌ Emergency access failed: ${error.message}`, true);
+        console.error(error);
+      }
+    }
+
+    window.closeEmergencyModal = function() {
+      document.getElementById('emergency-modal').style.display = 'none';
+      // Clear form
+      document.getElementById('emergency-doctor-search').value = '';
+      document.getElementById('emergency-record-hash').value = '';
+      document.getElementById('emergency-doctor-pkh').value = '';
+      document.getElementById('selected-emergency-info').style.display = 'none';
+      document.getElementById('other-reason').value = '';
+      document.getElementById('emergency-reason-select').value = 'Medical Emergency';
+      document.getElementById('other-reason-container').style.display = 'none';
+    }
+
+    // EMERGENCY HISTORY FUNCTIONS
+    window.showEmergencyHistory = function() {
+      if (!walletPkh) {
+        window.log("❌ Please connect wallet first", true);
+        return;
+      }
+      
+      const emergencyHistory = JSON.parse(localStorage.getItem('emergencyAccess_' + walletPkh) || '[]');
+      const modal = document.getElementById('emergency-history-modal');
+      const container = document.getElementById('emergency-history-list');
+      
+      if (emergencyHistory.length === 0) {
+        container.innerHTML = '<div class="empty-state">No emergency access history found</div>';
+      } else {
+        let html = '';
+        emergencyHistory.slice().reverse().forEach(entry => {
+          html += `
+            <div class="history-item">
+              <div class="history-header">
+                <span>🚨 Emergency Access</span>
+                <span style="color: #48bb78;">Authorized</span>
+              </div>
+              <div class="history-details">
+                <div>Doctor: Dr. ${entry.doctorName}</div>
+                <div>Reason: ${entry.reason}</div>
+                <div>Time: ${new Date(entry.timestamp).toLocaleString()}</div>
+                <div style="font-size: 11px;">Record: ${entry.recordHash.substring(0, 30)}...</div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+      
+      modal.style.display = 'flex';
+    }
+
+    window.closeEmergencyHistoryModal = function() {
+      document.getElementById('emergency-history-modal').style.display = 'none';
+    }
+
+    // VERIFY FUNCTIONS
+    window.showVerifyModal = function() {
+      const modal = document.getElementById('verify-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        loadVerifyRecords();
+      }
+    }
+
+    async function loadVerifyRecords() {
+      const container = document.getElementById('verify-records-list');
+      if (!container || !myRecords.length) {
+        container.innerHTML = '<div class="empty-state">No records found</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const r of myRecords.slice(0, 5)) {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          const txDate = new Date(parseInt(r.txHash.substring(0, 8), 16) * 1000);
+          const doctor = await getDoctorInfo(d.doctor);
+          const doctorName = doctor ? doctor.name : 'Unknown Doctor';
+          
+          html += `
+            <div class="record-card" onclick="document.getElementById('verifyHash').value = '${d.recordHash}'">
+              <div class="record-header">
+                <span class="record-doctor">Dr. ${doctorName}</span>
+                <span class="record-date">${txDate.toLocaleDateString()}</span>
+              </div>
+              <div class="record-details">
+                <div style="font-size: 11px;">${d.recordHash.substring(0, 30)}...</div>
+              </div>
+            </div>
+          `;
+        } catch (e) {}
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    window.closeVerifyModal = function() {
+      document.getElementById('verify-modal').style.display = 'none';
+      document.getElementById('verifySummary').value = '';
+      document.getElementById('verifyHash').value = '';
+    }
+
+    // Verify record function
+    window.verifyRecord = function() {
+      const summary = document.getElementById('verifySummary')?.value.trim();
+      const storedHash = document.getElementById('verifyHash')?.value.trim();
+      
+      if (!summary || !storedHash) {
+        window.log("❌ Please enter both summary and select a record", true);
+        return;
+      }
+      
+      // Compute hash of summary
+      const encoder = new TextEncoder();
+      crypto.subtle.digest('SHA-256', encoder.encode(summary)).then(hashBuffer => {
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        if (hashHex === storedHash) {
+          window.log("✅ Record VERIFIED - Authentic");
+        } else {
+          window.log("❌ Record TAMPERED - Hashes don't match", true);
+          window.log(`Expected: ${storedHash.substring(0, 30)}...`);
+          window.log(`Computed: ${hashHex.substring(0, 30)}...`);
+        }
+      }).catch(error => {
+        window.log(`❌ Verification failed: ${error.message}`, true);
+      });
+      
+      window.closeVerifyModal();
+    }
+
+    // View records function
+    window.viewRecords = function() {
+      window.log("📋 Viewing all records");
+      window.log(`Found ${myRecords.length} total records`);
+    }
+
+    // Export records function
+    window.exportRecords = function() {
+      window.log("📥 Exporting records");
+    }
+
+    // Auto-connect if coming from role selection
+    window.onload = function() {
+      const selectedRole = localStorage.getItem('selectedRole');
+      if (selectedRole === 'patient') {
+        const connectBtn = document.getElementById('connect-btn');
+        if (connectBtn) connectBtn.style.display = 'block';
+        window.log("👤 Please connect your wallet to access Patient Portal");
+      }
+      
+      // Set min date for appointment picker
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('appointment-date');
+      if (dateInput) dateInput.min = today;
+      
+      // Add event listeners for find doctor modal
+      const searchInput = document.getElementById('find-doctor-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(function(e) {
+          window.searchFindDoctor(e.target.value);
+        }, 500));
+      }
+    }
+
+    // Log function
+    window.log = function(message, isError = false) {
+      const logEl = document.getElementById('log');
+      if (logEl) {
+        const timestamp = new Date().toLocaleTimeString();
+        logEl.innerHTML = `[${timestamp}] ${message}\n` + logEl.innerHTML;
+        if (isError) {
+          console.error(message);
+        } else {
+          console.log(message);
+        }
+      }
+    }
+
+    window.clearLog = function() {
+      const logEl = document.getElementById('log');
+      if (logEl) {
+        logEl.innerHTML = 'Log cleared.';
+      }
+    }
+  </script>
+</body>
+</html> 

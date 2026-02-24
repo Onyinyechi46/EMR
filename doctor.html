@@ -1,0 +1,2733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMR Pro - Doctor Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="emr.js"></script>
+  <style>
+    .three-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .appointments-section {
+      margin: 30px 0;
+    }
+
+    .appointments-section h3 {
+      margin-bottom: 15px;
+      color: #2d3748;
+    }
+
+    .badge.success {
+      background: #48bb78;
+      color: white;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #edf2f7;
+      color: #4a5568;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .tab-btn.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .tab-btn#tab-pending.active {
+      background: #ed8936;
+    }
+
+    .tab-btn#tab-confirmed.active {
+      background: #48bb78;
+    }
+
+    .tab-btn#tab-completed.active {
+      background: #a0aec0;
+    }
+
+    .appointment-card {
+      transition: all 0.3s ease;
+    }
+
+    .appointment-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .empty-state {
+      padding: 30px;
+      text-align: center;
+      color: #a0aec0;
+      font-style: italic;
+    }
+
+    .patient-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #4299e1;
+      color: white;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-left: 5px;
+    }
+
+    .appointment-details {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 5px;
+    }
+
+    .patient-name {
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .patient-info {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 3px;
+    }
+
+    .search-results {
+      margin-top: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .search-result-item:hover {
+      background: #f7fafc;
+      border-color: #4299e1;
+    }
+
+    .patient-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .patient-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .patient-header h4 {
+      margin: 0;
+      color: #2d3748;
+    }
+
+    .patient-detail {
+      font-size: 13px;
+      color: #4a5568;
+      margin: 5px 0;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #718096;
+      width: 100px;
+      display: inline-block;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    /* Prescription Styles */
+    .prescriptions-section {
+      margin-top: 30px;
+    }
+
+    .prescription-card {
+      background: #f0fff4;
+      border-left: 4px solid #48bb78;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .prescription-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .prescription-medicine {
+      font-weight: bold;
+      color: #2d3748;
+      font-size: 16px;
+    }
+
+    .prescription-dosage {
+      background: #48bb78;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .prescription-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .prescription-instruction {
+      margin-top: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 4px;
+      font-style: italic;
+      color: #4a5568;
+    }
+
+    .prescription-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .prescription-active {
+      background: #48bb78;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .prescription-expired {
+      background: #a0aec0;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .medicine-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .medicine-row input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+
+    .medicine-row button {
+      background: #f56565;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .add-medicine-btn {
+      background: #48bb78;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .prescriptions-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .prescription-tab {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #edf2f7;
+      color: #4a5568;
+      transition: all 0.3s ease;
+    }
+
+    .prescription-tab.active {
+      background: #48bb78;
+      color: white;
+    }
+
+    /* Emergency Styles */
+    .emergency-badge {
+      background: #f56565;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    .emergency-card {
+      background: #fff5f5;
+      border-left: 4px solid #f56565;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .emergency-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .emergency-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .emergency-title {
+      font-weight: bold;
+      color: #c53030;
+    }
+
+    .emergency-time {
+      font-size: 11px;
+      color: #718096;
+    }
+
+    .emergency-details {
+      font-size: 13px;
+      color: #4a5568;
+    }
+
+    .record-card {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .record-card:hover {
+      background: #ebf8ff;
+      border-color: #4299e1;
+    }
+
+    .record-card.selected {
+      background: #ebf8ff;
+      border-color: #4299e1;
+      border-width: 2px;
+    }
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .record-date {
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .record-hash {
+      font-size: 11px;
+      color: #a0aec0;
+      font-family: monospace;
+    }
+
+    @media (max-width: 768px) {
+      .three-column {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>🏥 EMR Pro</h1>
+        <span class="role-badge doctor">Doctor Portal</span>
+      </div>
+      <div class="header-right">
+        <span id="wallet-status" class="wallet-badge">🔌 Not Connected</span>
+        <button onclick="window.connectWallet()" id="connect-btn" class="btn-primary">Connect Wallet</button>
+        <button onclick="window.location.href='index.html'" class="btn-small">⇽ Change Role</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" style="display: none;">
+      
+      <!-- Welcome Section -->
+      <div class="welcome-section">
+        <div class="welcome-text">
+          <h2>Welcome, <span id="doctor-name">Doctor</span> 👨‍⚕️</h2>
+          <div id="doctor-email" class="user-email"></div>
+          <div id="doctor-specialization" class="user-email" style="font-size: 14px; margin-top: 5px;"></div>
+        </div>
+        <div class="today-summary">
+          <div class="summary-item">
+            <span class="summary-label">Today's Appointments</span>
+            <span class="summary-value" id="today-appointments">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Pending Requests</span>
+            <span class="summary-value" id="pending-requests">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Emergency Alerts</span>
+            <span class="summary-value" id="emergency-alerts">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="active-patients">0</div>
+          <div class="stat-label">Active Patients</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="records-today">0</div>
+          <div class="stat-label">Records Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="pending-lab-results">0</div>
+          <div class="stat-label">Pending Labs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="completed-cases">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button id="new-record" class="btn-success" onclick="window.showNewRecordForm()">📝 New Record</button>
+        <button id="new-prescription" class="btn-success" onclick="window.showPrescriptionForm()">💊 New Prescription</button>
+        <button id="find-patient" class="btn-primary" onclick="window.showPatientSearch()">🔍 Find Patient</button>
+        <button id="emergency-access" class="btn-emergency" onclick="window.showEmergencyAccessModal()">🚨 Emergency Access</button>
+        <button id="emergency-history" class="btn-info" onclick="window.showEmergencyHistory()">📋 Emergency Log</button>
+        <button id="view-appointments" class="btn-info" onclick="window.showAppointmentsModal()">📅 Appointments</button>
+        <button id="view-prescriptions" class="btn-info" onclick="window.showPrescriptionsModal()">💊 Prescriptions</button>
+        <button id="batch-operations" class="btn-warning" onclick="window.showBatchModal()">📦 Batch</button>
+        <button id="audit-log" class="btn-secondary" onclick="window.showAuditModal()">📋 Audit</button>
+        <button id="my-schedule" class="btn-info" onclick="window.showMySchedule()">📅 My Schedule</button>
+      </div>
+
+      <!-- Emergency Alerts Section -->
+      <div id="emergency-alerts-section" class="card" style="display: none; border-left: 4px solid #f56565; margin-bottom: 20px;">
+        <div class="card-header">
+          <h2 style="color: #c53030;">🚨 Emergency Access Requests</h2>
+          <span class="badge" style="background: #f56565;" id="emergency-alerts-count">0</span>
+        </div>
+        <div id="emergency-alerts-list" class="emergency-container">
+          <!-- Emergency alerts will be listed here -->
+        </div>
+      </div>
+
+      <!-- Three Column Layout for Appointments -->
+      <div class="appointments-section">
+        <h3>📅 Appointment Management</h3>
+        <div class="three-column">
+          <!-- Pending Requests -->
+          <div class="card">
+            <div class="card-header">
+              <h2>⏳ Pending Requests</h2>
+              <span class="badge warning" id="pending-requests-count">0</span>
+            </div>
+            <div id="pending-appointments-list" class="appointments-list">
+              <div class="loading">No pending requests</div>
+            </div>
+          </div>
+
+          <!-- Confirmed Appointments -->
+          <div class="card">
+            <div class="card-header">
+              <h2>✅ Confirmed</h2>
+              <span class="badge success" id="confirmed-count">0</span>
+            </div>
+            <div id="confirmed-appointments-list" class="appointments-list">
+              <div class="loading">No confirmed appointments</div>
+            </div>
+          </div>
+
+          <!-- Completed/History -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📋 Completed</h2>
+              <span class="badge" id="completed-count">0</span>
+            </div>
+            <div id="completed-appointments-list" class="appointments-list">
+              <div class="loading">No completed appointments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Column Layout for Other Content -->
+      <div class="two-column">
+        <!-- Left Column -->
+        <div class="left-column">
+          <!-- Today's Schedule -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📅 Today's Schedule</h2>
+              <span class="badge" id="schedule-count">0</span>
+            </div>
+            <div id="schedule-list" class="schedule-container">
+              <div class="loading">Connect wallet to view schedule...</div>
+            </div>
+          </div>
+
+          <!-- Recent Patients -->
+          <div class="card">
+            <div class="card-header">
+              <h2>👥 Recent Patients</h2>
+              <button onclick="window.showMyPatients()" class="btn-small">View All</button>
+            </div>
+            <div id="recent-patients-list" class="patients-container">
+              <div class="loading">Connect wallet to view patients...</div>
+            </div>
+          </div>
+
+          <!-- Recent Prescriptions -->
+          <div class="card">
+            <div class="card-header">
+              <h2>💊 Recent Prescriptions</h2>
+              <button onclick="window.showPrescriptionsModal()" class="btn-small">View All</button>
+            </div>
+            <div id="recent-prescriptions-list" class="prescriptions-container">
+              <div class="loading">Connect wallet to view prescriptions...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+          <!-- Pending Reviews (Medical Records) -->
+          <div class="card">
+            <div class="card-header">
+              <h2>⚠️ Pending Record Reviews</h2>
+              <span class="badge warning" id="pending-count">0</span>
+            </div>
+            <div id="pending-reviews-list" class="pending-container">
+              <div class="loading">Connect wallet to view pending reviews...</div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📊 Recent Activity</h2>
+            </div>
+            <div id="recent-activity" class="activity-container">
+              <div class="loading">Connect wallet to view activity...</div>
+            </div>
+          </div>
+
+          <!-- Quick Patient Search -->
+          <div class="card">
+            <div class="card-header">
+              <h2>🔍 Quick Patient Search</h2>
+            </div>
+            <div class="search-box">
+              <input type="text" id="patient-search" placeholder="Search patient by name or email...">
+              <button id="search-patient-btn" class="btn-primary" onclick="window.searchPatients()" style="margin-top: 10px; width: 100%;">Search</button>
+            </div>
+            <div id="search-results" class="search-results"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Record Form -->
+      <div id="new-record-form" class="card" style="display: none;">
+        <div class="card-header">
+          <h2>📝 Create New Medical Record</h2>
+          <button onclick="window.hideNewRecordForm()" class="btn-small">Hide</button>
+        </div>
+        
+        <div class="form-group">
+          <label>Patient Name or Email:</label>
+          <input type="text" id="patient-search-input" placeholder="Search for patient...">
+          <div id="patient-search-results" style="max-height: 150px; overflow-y: auto; margin-top: 10px;"></div>
+          <input type="hidden" id="patient-pkh">
+        </div>
+
+        <div id="selected-patient-info" style="display: none; background: #ebf8ff; padding: 10px; border-radius: 8px; margin: 10px 0;">
+          <strong>Selected Patient:</strong> <span id="selected-patient-name"></span>
+          <button type="button" onclick="window.clearPatientSelection()" class="btn-small" style="margin-left: 10px;">Change</button>
+        </div>
+
+        <div class="form-group">
+          <label>Record Type:</label>
+          <select id="recordType" class="form-select">
+            <option value="0">General Checkup</option>
+            <option value="1">Prescription</option>
+            <option value="2">Lab Results</option>
+            <option value="3">Imaging Report</option>
+            <option value="4">Surgery Record</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Medical Record Summary:</label>
+          <textarea id="summary" rows="4" placeholder="Enter diagnosis, prescription, or notes..."></textarea>
+        </div>
+
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="encryptData"> 🔒 Encrypt data
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Follow-up Date (optional):</label>
+          <input type="date" id="followup-date">
+        </div>
+
+        <button onclick="window.submitRecord()" class="btn-success">Submit Record (3 ADA)</button>
+      </div>
+
+      <!-- New Prescription Form -->
+      <div id="new-prescription-form" class="card" style="display: none;">
+        <div class="card-header">
+          <h2>💊 Create New Prescription</h2>
+          <button onclick="window.hidePrescriptionForm()" class="btn-small">Hide</button>
+        </div>
+        
+        <div class="form-group">
+          <label>Patient Name or Email:</label>
+          <input type="text" id="prescription-patient-search" placeholder="Search for patient...">
+          <div id="prescription-patient-results" style="max-height: 150px; overflow-y: auto; margin-top: 10px;"></div>
+          <input type="hidden" id="prescription-patient-pkh">
+        </div>
+
+        <div id="selected-prescription-patient" style="display: none; background: #ebf8ff; padding: 10px; border-radius: 8px; margin: 10px 0;">
+          <strong>Selected Patient:</strong> <span id="selected-prescription-patient-name"></span>
+          <button type="button" onclick="window.clearPrescriptionPatient()" class="btn-small" style="margin-left: 10px;">Change</button>
+        </div>
+
+        <div class="form-group">
+          <label>Medicines:</label>
+          <div id="medicines-container">
+            <div class="medicine-row">
+              <input type="text" class="medicine-name" placeholder="Medicine name" required>
+              <input type="text" class="medicine-dosage" placeholder="Dosage (e.g., 500mg)" required>
+              <input type="text" class="medicine-frequency" placeholder="Frequency (e.g., Twice daily)" required>
+              <input type="number" class="medicine-duration" placeholder="Days" min="1" value="7" style="width: 80px;">
+              <button type="button" onclick="this.parentElement.remove()">✗</button>
+            </div>
+          </div>
+          <button type="button" onclick="window.addMedicineRow()" class="add-medicine-btn">+ Add Another Medicine</button>
+        </div>
+
+        <div class="form-group">
+          <label>Additional Instructions:</label>
+          <textarea id="prescription-instructions" rows="3" placeholder="e.g., Take with food, avoid alcohol..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Prescription Date:</label>
+            <input type="date" id="prescription-date" value="">
+          </div>
+          <div class="form-group half">
+            <label>Expiry Date:</label>
+            <input type="date" id="prescription-expiry" value="">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Diagnosis/Reason:</label>
+          <input type="text" id="prescription-diagnosis" placeholder="e.g., Hypertension, Infection">
+        </div>
+
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="allow-refills"> Allow Refills
+          </label>
+          <label style="margin-left: 20px;">
+            <input type="number" id="refill-count" value="0" min="0" max="10" style="width: 60px;"> Refills
+          </label>
+        </div>
+
+        <button onclick="window.submitPrescription()" class="btn-success">Issue Prescription</button>
+      </div>
+
+      <!-- Emergency Access Modal -->
+      <div id="emergency-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3 style="color: #c53030;">🚨 Emergency Patient Access</h3>
+          <p style="color: #e53e3e; margin-bottom: 20px;">⚠️ This action will be logged for audit purposes</p>
+          
+          <div class="form-group">
+            <label>Select Patient:</label>
+            <div class="search-box">
+              <input type="text" id="emergency-patient-search" placeholder="Search patient by name or email...">
+            </div>
+            <div id="emergency-patient-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 10px; padding: 10px;">
+              <div class="loading-doctors">Type to search for patients...</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Select Patient's Record:</label>
+            <div id="emergency-records-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+              <div class="loading-doctors">Select a patient first to see records...</div>
+            </div>
+          </div>
+
+          <div id="selected-emergency-info" style="display: none; background: #fff5f5; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #e53e3e;">
+            <strong>Selected Record:</strong>
+            <p id="selected-record-details"></p>
+          </div>
+          
+          <div class="form-group">
+            <label>Emergency Reason:</label>
+            <select id="emergency-reason-select">
+              <option value="Medical Emergency">Medical Emergency</option>
+              <option value="Patient Unconscious">Patient Unconscious</option>
+              <option value="Cannot Reach Patient">Cannot Reach Patient</option>
+              <option value="Need Medical History">Need Immediate Medical History</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="other-reason-container" style="display: none;">
+            <label>Please specify:</label>
+            <input type="text" id="other-reason" placeholder="Enter reason">
+          </div>
+          
+          <!-- Hidden inputs for selected data -->
+          <input type="hidden" id="emergency-record-hash">
+          <input type="hidden" id="emergency-patient-pkh">
+          
+          <div class="modal-buttons">
+            <button onclick="window.requestEmergencyAccess()" class="btn-emergency">Request Emergency Access</button>
+            <button onclick="window.closeEmergencyModal()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency History Modal -->
+      <div id="emergency-history-modal" class="modal" style="display: none;">
+        <div class="modal-content large">
+          <h3>📋 Emergency Access Log</h3>
+          <div id="emergency-history-list" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+            <!-- Emergency history will be listed here -->
+          </div>
+          <div class="modal-buttons">
+            <button onclick="window.closeEmergencyHistoryModal()" class="btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Modal (Full View) -->
+      <div id="appointments-modal" class="modal" style="display: none;">
+        <div class="modal-content large">
+          <h3>📅 All Appointments</h3>
+          
+          <div class="tab-buttons" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button onclick="window.showAppointmentTab('pending')" class="tab-btn active" id="tab-pending">Pending</button>
+            <button onclick="window.showAppointmentTab('confirmed')" class="tab-btn" id="tab-confirmed">Confirmed</button>
+            <button onclick="window.showAppointmentTab('completed')" class="tab-btn" id="tab-completed">Completed</button>
+            <button onclick="window.showAppointmentTab('all')" class="tab-btn" id="tab-all">All</button>
+          </div>
+          
+          <div id="all-appointments-list" class="appointments-full-list" style="max-height: 400px; overflow-y: auto;">
+            <!-- Appointments will be listed here -->
+          </div>
+          
+          <div class="modal-buttons" style="margin-top: 20px;">
+            <button onclick="window.closeAppointmentsModal()" class="btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prescriptions Modal -->
+      <div id="prescriptions-modal" class="modal" style="display: none;">
+        <div class="modal-content large">
+          <h3>💊 All Prescriptions</h3>
+          
+          <div class="tab-buttons">
+            <button onclick="window.showPrescriptionTab('active')" class="prescription-tab active" id="tab-active">Active</button>
+            <button onclick="window.showPrescriptionTab('expired')" class="prescription-tab" id="tab-expired">Expired</button>
+            <button onclick="window.showPrescriptionTab('all')" class="prescription-tab" id="tab-all">All</button>
+          </div>
+          
+          <div id="all-prescriptions-list" class="prescriptions-list" style="max-height: 400px; overflow-y: auto;">
+            <!-- Prescriptions will be listed here -->
+          </div>
+          
+          <div class="modal-buttons" style="margin-top: 20px;">
+            <button onclick="window.closePrescriptionsModal()" class="btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Schedule Modal -->
+      <div id="schedule-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>📅 My Availability Schedule</h3>
+          
+          <div class="form-group">
+            <label>Available Days:</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+              <label><input type="checkbox" id="mon" value="Mon"> Monday</label>
+              <label><input type="checkbox" id="tue" value="Tue"> Tuesday</label>
+              <label><input type="checkbox" id="wed" value="Wed"> Wednesday</label>
+              <label><input type="checkbox" id="thu" value="Thu"> Thursday</label>
+              <label><input type="checkbox" id="fri" value="Fri"> Friday</label>
+              <label><input type="checkbox" id="sat" value="Sat"> Saturday</label>
+              <label><input type="checkbox" id="sun" value="Sun"> Sunday</label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Available From:</label>
+              <input type="time" id="available-from" value="09:00">
+            </div>
+            <div class="form-group half">
+              <label>Available To:</label>
+              <input type="time" id="available-to" value="17:00">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Consultation Fee ($):</label>
+            <input type="number" id="consultation-fee" step="0.01" placeholder="50.00">
+          </div>
+          
+          <div class="modal-buttons">
+            <button onclick="window.updateSchedule()" class="btn-success">Update Schedule</button>
+            <button onclick="window.closeScheduleModal()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resolve Record Modal -->
+      <div id="resolve-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>🔓 Resolve Record</h3>
+          <div class="form-group">
+            <label>Record ID:</label>
+            <input type="text" id="recordHash" placeholder="Enter record ID">
+          </div>
+          <div class="modal-buttons">
+            <button onclick="window.resolveRecord()" class="btn-warning">Resolve</button>
+            <button onclick="window.closeResolveModal()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Modal -->
+      <div id="batch-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>📦 Batch Resolve</h3>
+          <div class="form-group">
+            <label>Record IDs (one per line):</label>
+            <textarea id="batchHashes" rows="4" placeholder="Enter record IDs..."></textarea>
+          </div>
+          <div class="modal-buttons">
+            <button onclick="window.batchResolve()" class="btn-warning">Batch Resolve</button>
+            <button onclick="window.closeBatchModal()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit Modal -->
+      <div id="audit-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>📋 View Audit Trail</h3>
+          <div class="form-group">
+            <label>Record ID:</label>
+            <input type="text" id="auditRecordHash" placeholder="Enter record ID">
+          </div>
+          <div class="modal-buttons">
+            <button onclick="window.viewAuditLog()" class="btn-info">View</button>
+            <button onclick="window.closeAuditModal()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient Details Modal -->
+      <div id="patient-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>👤 Patient Details</h3>
+          <div id="patient-details"></div>
+          <div class="modal-buttons">
+            <button onclick="window.closePatientModal()" class="btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prescription Details Modal -->
+      <div id="prescription-details-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>💊 Prescription Details</h3>
+          <div id="prescription-details-content"></div>
+          <div class="modal-buttons">
+            <button onclick="window.closePrescriptionDetailsModal()" class="btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Activity Log</h2>
+        <button onclick="window.clearLog()" class="btn-small">Clear</button>
+      </div>
+      <pre id="log">Ready to connect...</pre>
+    </div>
+  </div>
+
+  <script type="module">
+    // Doctor-specific functions
+    let lucid, walletPkh, scriptAddress;
+    let doctorAppointments = {
+      pending: [],
+      confirmed: [],
+      completed: []
+    };
+    let prescriptions = [];
+    let doctorInfo = null;
+    let emergencyRequests = [];
+    let myPatients = [];
+    let allPatientRecords = [];
+    
+    // Caches
+    const patientCache = new Map();
+    
+    // Safe function to update element text
+    function safeSetText(elementId, text) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = text;
+      }
+    }
+
+    // Get patient info by PKH
+    async function getPatientInfo(patientPkh) {
+      if (patientCache.has(patientPkh)) {
+        return patientCache.get(patientPkh);
+      }
+      
+      try {
+        const response = await fetch(`get_patient_info.php?pkh=${encodeURIComponent(patientPkh)}`);
+        const data = await response.json();
+        
+        let patient;
+        if (data.success && data.patient) {
+          patient = data.patient;
+          patient.pkh = patientPkh;
+        } else {
+          patient = {
+            pkh: patientPkh,
+            name: 'Unknown Patient',
+            email: '',
+            phone: ''
+          };
+        }
+        
+        patientCache.set(patientPkh, patient);
+        return patient;
+      } catch (error) {
+        console.error('Error getting patient info:', error);
+        const fallback = {
+          pkh: patientPkh,
+          name: 'Unknown Patient',
+          email: '',
+          phone: ''
+        };
+        patientCache.set(patientPkh, fallback);
+        return fallback;
+      }
+    }
+
+    // Get multiple patient names
+    async function getPatientNames(patientPkhs) {
+      const uniquePkhs = [...new Set(patientPkhs)];
+      const result = [];
+      
+      // Check cache first
+      const uncached = [];
+      uniquePkhs.forEach(pkh => {
+        if (patientCache.has(pkh)) {
+          result.push(patientCache.get(pkh));
+        } else {
+          uncached.push(pkh);
+        }
+      });
+      
+      if (uncached.length > 0) {
+        try {
+          const response = await fetch('get_patient_names_batch.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pkhs: uncached })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.patients) {
+            data.patients.forEach(patient => {
+              patientCache.set(patient.pkh, patient);
+              result.push(patient);
+            });
+          }
+        } catch (error) {
+          console.error('Error getting patient names:', error);
+        }
+      }
+      
+      return result;
+    }
+
+    // Get doctor info
+    async function getDoctorInfo(pkh) {
+      try {
+        const response = await fetch(`get_doctor_info.php?pkh=${encodeURIComponent(pkh)}`);
+        const data = await response.json();
+        
+        if (data.success && data.doctor) {
+          doctorInfo = data.doctor;
+          document.getElementById('doctor-name').textContent = doctorInfo.name;
+          document.getElementById('doctor-email').textContent = doctorInfo.email;
+          if (doctorInfo.specialization) {
+            document.getElementById('doctor-specialization').textContent = doctorInfo.specialization;
+          }
+        } else {
+          if (confirm('You are not registered as a doctor. Would you like to register now?')) {
+            window.location.href = 'register_doctor.html';
+          }
+        }
+      } catch (error) {
+        console.error('Error getting doctor info:', error);
+      }
+    }
+
+    // Make functions available globally
+    window.connectWallet = async function() {
+      if (!window.cardano?.lace) {
+        log("Lace wallet not found. Please install Lace wallet.", true);
+        return;
+      }
+
+      try {
+        // Initialize Lucid
+        lucid = await Lucid.new(new Blockfrost(BLOCKFROST_URL, BLOCKFROST_KEY), NETWORK);
+        const api = await window.cardano.lace.enable();
+        lucid.selectWallet(api);
+
+        const walletAddress = await lucid.wallet.address();
+        scriptAddress = lucid.utils.validatorToAddress(script);
+        
+        const walletDetails = lucid.utils.getAddressDetails(walletAddress);
+        walletPkh = walletDetails.paymentCredential.hash;
+
+        // Store in window for other functions
+        window.lucid = lucid;
+        window.walletPkh = walletPkh;
+        window.scriptAddress = scriptAddress;
+
+        // Update UI
+        document.getElementById("wallet-status").innerHTML = `✅ Connected`;
+        document.getElementById("connect-btn").style.display = "none";
+        document.getElementById("main-content").style.display = "block";
+        
+        // Get doctor info
+        await getDoctorInfo(walletPkh);
+        
+        // Set today's date for prescription form
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('prescription-date').value = today;
+        
+        // Set default expiry (30 days from now)
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 30);
+        document.getElementById('prescription-expiry').value = expiry.toISOString().split('T')[0];
+        
+        // Load emergency requests
+        await loadEmergencyRequests();
+        
+        // Load doctor dashboard
+        await loadDoctorDashboard();
+        
+        log(`✅ Connected successfully`);
+        
+      } catch (error) {
+        log(`Failed to connect: ${error.message}`, true);
+      }
+    }
+
+    async function loadDoctorDashboard() {
+      if (!lucid || !walletPkh) return;
+      
+      try {
+        const utxos = await lucid.utxosAt(scriptAddress);
+        allPatientRecords = utxos;
+        
+        // Get doctor's records
+        const doctorRecords = utxos.filter(u => {
+          if (!u.datum) return false;
+          try {
+            const d = Data.from(u.datum, EMRDatum);
+            return d.doctor === walletPkh;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        // Get unique patients
+        const patients = new Set();
+        doctorRecords.forEach(u => {
+          try {
+            const d = Data.from(u.datum, EMRDatum);
+            patients.add(d.patient);
+          } catch (e) {}
+        });
+        myPatients = Array.from(patients);
+
+        // Get pending reviews (unresolved records)
+        const pending = doctorRecords.filter(u => {
+          try {
+            const d = Data.from(u.datum, EMRDatum);
+            return !d.resolved;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        // Get today's records
+        const today = new Date().toDateString();
+        const todayRecords = doctorRecords.filter(u => {
+          const txDate = new Date(parseInt(u.txHash.substring(0, 8), 16) * 1000).toDateString();
+          return txDate === today;
+        });
+
+        // Load appointments from localStorage
+        await loadAppointments();
+        
+        // Load prescriptions from localStorage
+        await loadPrescriptions();
+
+        // Update stats
+        safeSetText('active-patients', myPatients.length);
+        safeSetText('records-today', todayRecords.length);
+        safeSetText('pending-reviews', pending.length);
+        safeSetText('pending-count', pending.length);
+        safeSetText('total-patients', myPatients.length);
+        safeSetText('today-appointments', todayRecords.length);
+        safeSetText('schedule-count', todayRecords.length);
+        safeSetText('emergency-alerts', emergencyRequests.length);
+        
+        // Show recent patients
+        await showRecentPatients(myPatients.slice(0, 5), doctorRecords);
+        
+        // Show pending reviews
+        await showPendingReviews(pending.slice(0, 5));
+        
+        // Show today's schedule
+        await showTodaySchedule(todayRecords.slice(0, 5));
+        
+        // Show recent prescriptions
+        await showRecentPrescriptions();
+        
+        // Show appointments
+        await renderAppointments();
+        
+        // Show emergency alerts
+        await showEmergencyAlerts();
+        
+      } catch (error) {
+        console.error("Error loading doctor dashboard:", error);
+        log(`Error loading dashboard: ${error.message}`, true);
+      }
+    }
+
+    // Load emergency requests
+    async function loadEmergencyRequests() {
+      if (!walletPkh) return;
+      
+      try {
+        // Load from localStorage
+        emergencyRequests = JSON.parse(localStorage.getItem('emergencyRequests_' + walletPkh) || '[]');
+        
+        // Get patient names
+        const patientPkhs = [...new Set(emergencyRequests.map(r => r.patient))];
+        const patientInfos = await getPatientNames(patientPkhs);
+        const patientMap = new Map(patientInfos.map(p => [p.pkh, p]));
+        
+        // Add patient names to requests
+        emergencyRequests = emergencyRequests.map(r => ({
+          ...r,
+          patientName: patientMap.get(r.patient)?.name || 'Unknown Patient'
+        }));
+        
+        // Sort by date (most recent first)
+        emergencyRequests.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        safeSetText('emergency-alerts', emergencyRequests.length);
+        
+      } catch (error) {
+        console.error("Error loading emergency requests:", error);
+      }
+    }
+
+    // Show emergency alerts
+    async function showEmergencyAlerts() {
+      const section = document.getElementById('emergency-alerts-section');
+      const container = document.getElementById('emergency-alerts-list');
+      const count = document.getElementById('emergency-alerts-count');
+      
+      if (emergencyRequests.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      
+      section.style.display = 'block';
+      count.textContent = emergencyRequests.length;
+      
+      let html = '';
+      emergencyRequests.slice(0, 3).forEach(req => {
+        const date = new Date(req.timestamp);
+        html += `
+          <div class="emergency-card" onclick="window.viewEmergencyDetails('${req.id}')">
+            <div class="emergency-header">
+              <span class="emergency-title">🚨 Emergency Access - ${req.patientName}</span>
+              <span class="emergency-time">${date.toLocaleString()}</span>
+            </div>
+            <div class="emergency-details">
+              <div><strong>Reason:</strong> ${req.reason}</div>
+              <div><strong>Record:</strong> ${req.recordHash.substring(0, 20)}...</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      if (emergencyRequests.length > 3) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096;">+${emergencyRequests.length - 3} more emergency requests</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Load appointments from localStorage
+    async function loadAppointments() {
+      if (!walletPkh) return;
+      
+      try {
+        const allAppointments = JSON.parse(localStorage.getItem('allAppointments') || '[]');
+        
+        // Reset appointment categories
+        doctorAppointments = {
+          pending: [],
+          confirmed: [],
+          completed: []
+        };
+        
+        // Filter appointments for this doctor
+        const doctorApps = allAppointments.filter(apt => apt.doctor === walletPkh);
+        
+        // Get patient names
+        const patientPkhs = [...new Set(doctorApps.map(apt => apt.patient))];
+        const patientInfos = await getPatientNames(patientPkhs);
+        const patientMap = new Map(patientInfos.map(p => [p.pkh, p]));
+        
+        // Categorize appointments
+        doctorApps.forEach(apt => {
+          const aptDate = new Date(apt.date + 'T' + apt.time);
+          const now = new Date();
+          
+          const patient = patientMap.get(apt.patient) || { name: 'Unknown Patient' };
+          
+          const aptWithInfo = {
+            ...apt,
+            patientName: patient.name,
+            patientEmail: patient.email,
+            patientPhone: patient.phone
+          };
+          
+          if (apt.status === 'pending') {
+            doctorAppointments.pending.push(aptWithInfo);
+          } else if (apt.status === 'confirmed') {
+            if (aptDate < now) {
+              aptWithInfo.status = 'completed';
+              doctorAppointments.completed.push(aptWithInfo);
+            } else {
+              doctorAppointments.confirmed.push(aptWithInfo);
+            }
+          } else if (apt.status === 'completed') {
+            doctorAppointments.completed.push(aptWithInfo);
+          }
+        });
+        
+        // Sort appointments
+        doctorAppointments.pending.sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+        doctorAppointments.confirmed.sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+        doctorAppointments.completed.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+        
+        // Update counts
+        safeSetText('pending-requests', doctorAppointments.pending.length);
+        safeSetText('pending-requests-count', doctorAppointments.pending.length);
+        safeSetText('confirmed-count', doctorAppointments.confirmed.length);
+        safeSetText('completed-count', doctorAppointments.completed.length);
+        
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+      }
+    }
+
+    // Load prescriptions from localStorage
+    async function loadPrescriptions() {
+      if (!walletPkh) return;
+      
+      try {
+        const allPrescriptions = JSON.parse(localStorage.getItem('allPrescriptions') || '[]');
+        
+        // Filter prescriptions for this doctor
+        prescriptions = allPrescriptions.filter(p => p.doctor === walletPkh);
+        
+        // Get patient names
+        const patientPkhs = [...new Set(prescriptions.map(p => p.patient))];
+        const patientInfos = await getPatientNames(patientPkhs);
+        const patientMap = new Map(patientInfos.map(p => [p.pkh, p]));
+        
+        // Add patient names to prescriptions
+        prescriptions = prescriptions.map(p => ({
+          ...p,
+          patientName: patientMap.get(p.patient)?.name || 'Unknown Patient'
+        }));
+        
+        // Sort by date (most recent first)
+        prescriptions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+      } catch (error) {
+        console.error("Error loading prescriptions:", error);
+      }
+    }
+
+    // Show recent prescriptions
+    async function showRecentPrescriptions() {
+      const container = document.getElementById('recent-prescriptions-list');
+      if (!container) return;
+      
+      if (prescriptions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No recent prescriptions</div>';
+        return;
+      }
+      
+      let html = '';
+      prescriptions.slice(0, 3).forEach(p => {
+        const isExpired = new Date(p.expiry) < new Date();
+        const statusClass = isExpired ? 'prescription-expired' : 'prescription-active';
+        const statusText = isExpired ? 'Expired' : 'Active';
+        
+        html += `
+          <div class="prescription-card" style="margin-bottom: 10px; padding: 12px; cursor: pointer;" onclick="window.viewPrescriptionDetails('${p.id}')">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: bold;">👤 ${p.patientName}</div>
+                <div style="font-size: 12px; color: #718096;">${p.medicines.length} medicine(s)</div>
+                <div style="font-size: 11px; color: #718096;">Issued: ${new Date(p.date).toLocaleDateString()}</div>
+              </div>
+              <span class="${statusClass}">${statusText}</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      if (prescriptions.length > 3) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096;">+${prescriptions.length - 3} more prescriptions</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Render appointments
+    async function renderAppointments() {
+      await renderPendingAppointments();
+      await renderConfirmedAppointments();
+      await renderCompletedAppointments();
+    }
+
+    async function renderPendingAppointments() {
+      const container = document.getElementById('pending-appointments-list');
+      if (!container) return;
+      
+      if (doctorAppointments.pending.length === 0) {
+        container.innerHTML = '<div class="empty-state">No pending appointment requests</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const apt of doctorAppointments.pending.slice(0, 5)) {
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        html += `
+          <div class="appointment-card pending" style="padding: 15px; border-bottom: 1px solid #e2e8f0; background: #fff5f5;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: bold;">${aptDate.toLocaleDateString()} at ${apt.time}</div>
+                <div class="patient-name">👤 ${apt.patientName || 'Patient'}</div>
+                ${apt.patientEmail ? `<div class="patient-info">📧 ${apt.patientEmail}</div>` : ''}
+                <div style="font-size: 12px; margin-top: 5px;">Reason: ${apt.reason || 'Check-up'}</div>
+                ${apt.notes ? `<div style="font-size: 11px; color: #718096; margin-top: 5px;">📝 ${apt.notes.substring(0, 50)}...</div>` : ''}
+              </div>
+              <div style="display: flex; gap: 5px;">
+                <button onclick="window.confirmAppointment('${apt.id}')" class="btn-small" style="background: #48bb78; color: white;">✓ Confirm</button>
+                <button onclick="window.rejectAppointment('${apt.id}')" class="btn-small" style="background: #f56565; color: white;">✗ Reject</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      if (doctorAppointments.pending.length > 5) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096;">+${doctorAppointments.pending.length - 5} more requests</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    async function renderConfirmedAppointments() {
+      const container = document.getElementById('confirmed-appointments-list');
+      if (!container) return;
+      
+      if (doctorAppointments.confirmed.length === 0) {
+        container.innerHTML = '<div class="empty-state">No confirmed appointments</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const apt of doctorAppointments.confirmed.slice(0, 5)) {
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        html += `
+          <div class="appointment-card confirmed" style="padding: 15px; border-bottom: 1px solid #e2e8f0; background: #f0fff4;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: bold;">${aptDate.toLocaleDateString()} at ${apt.time}</div>
+                <div class="patient-name">👤 ${apt.patientName || 'Patient'}</div>
+                ${apt.patientEmail ? `<div class="patient-info">📧 ${apt.patientEmail}</div>` : ''}
+                <div style="font-size: 12px;">Reason: ${apt.reason || 'Check-up'}</div>
+              </div>
+              <div>
+                <span style="background: #48bb78; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Confirmed</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      if (doctorAppointments.confirmed.length > 5) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096;">+${doctorAppointments.confirmed.length - 5} more</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    async function renderCompletedAppointments() {
+      const container = document.getElementById('completed-appointments-list');
+      if (!container) return;
+      
+      if (doctorAppointments.completed.length === 0) {
+        container.innerHTML = '<div class="empty-state">No completed appointments</div>';
+        return;
+      }
+      
+      let html = '';
+      for (let i = 0; i < Math.min(doctorAppointments.completed.length, 5); i++) {
+        const apt = doctorAppointments.completed[i];
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        
+        html += `
+          <div class="appointment-card completed" style="padding: 15px; border-bottom: 1px solid #e2e8f0; background: #f7fafc;">
+            <div style="display: flex; justify-content: space-between;">
+              <div>
+                <div style="font-weight: bold;">${aptDate.toLocaleDateString()} at ${apt.time}</div>
+                <div class="patient-name">👤 ${apt.patientName || 'Patient'}</div>
+                <div style="font-size: 12px; margin-top: 5px;">Reason: ${apt.reason || 'Check-up'}</div>
+              </div>
+              <div>
+                <span style="background: #a0aec0; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Completed</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      if (doctorAppointments.completed.length > 5) {
+        html += `<div style="padding: 10px; text-align: center; color: #718096;">+${doctorAppointments.completed.length - 5} more</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Confirm appointment
+    window.confirmAppointment = async function(appointmentId) {
+      const appointment = doctorAppointments.pending.find(a => a.id === appointmentId);
+      if (appointment) {
+        appointment.status = 'confirmed';
+        doctorAppointments.pending = doctorAppointments.pending.filter(a => a.id !== appointmentId);
+        doctorAppointments.confirmed.push(appointment);
+        
+        doctorAppointments.confirmed.sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+        
+        // Save to localStorage
+        const allAppointments = JSON.parse(localStorage.getItem('allAppointments') || '[]');
+        const updatedApps = allAppointments.map(a => 
+          a.id === appointmentId ? {...a, status: 'confirmed'} : a
+        );
+        localStorage.setItem('allAppointments', JSON.stringify(updatedApps));
+        
+        await renderAppointments();
+        safeSetText('pending-requests', doctorAppointments.pending.length);
+        safeSetText('pending-requests-count', doctorAppointments.pending.length);
+        safeSetText('confirmed-count', doctorAppointments.confirmed.length);
+        
+        log(`✅ Appointment confirmed for patient ${appointment.patientName}`);
+      }
+    }
+
+    // Reject appointment
+    window.rejectAppointment = async function(appointmentId) {
+      const appointment = doctorAppointments.pending.find(a => a.id === appointmentId);
+      if (appointment) {
+        if (confirm('Are you sure you want to reject this appointment request?')) {
+          appointment.status = 'rejected';
+          appointment.rejectedAt = new Date().toISOString();
+          
+          doctorAppointments.pending = doctorAppointments.pending.filter(a => a.id !== appointmentId);
+          
+          const allAppointments = JSON.parse(localStorage.getItem('allAppointments') || '[]');
+          const updatedApps = allAppointments.map(a => 
+            a.id === appointmentId ? {...a, status: 'rejected', rejectedAt: new Date().toISOString()} : a
+          );
+          localStorage.setItem('allAppointments', JSON.stringify(updatedApps));
+          
+          await renderAppointments();
+          safeSetText('pending-requests', doctorAppointments.pending.length);
+          safeSetText('pending-requests-count', doctorAppointments.pending.length);
+          
+          log(`❌ Appointment rejected for patient ${appointment.patientName}`);
+        }
+      }
+    }
+
+    // Prescription Functions
+    window.showPrescriptionForm = function() {
+      const form = document.getElementById('new-prescription-form');
+      if (form) form.style.display = 'block';
+      
+      // Add search listener
+      const searchInput = document.getElementById('prescription-patient-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(function(e) {
+          window.searchPatientsForPrescription(e.target.value);
+        }, 500));
+      }
+    }
+    
+    window.hidePrescriptionForm = function() {
+      const form = document.getElementById('new-prescription-form');
+      if (form) form.style.display = 'none';
+      window.clearPrescriptionForm();
+    }
+    
+    window.clearPrescriptionForm = function() {
+      document.getElementById('prescription-patient-pkh').value = '';
+      document.getElementById('selected-prescription-patient').style.display = 'none';
+      document.getElementById('prescription-patient-search').value = '';
+      document.getElementById('prescription-patient-results').innerHTML = '';
+      document.getElementById('medicines-container').innerHTML = `
+        <div class="medicine-row">
+          <input type="text" class="medicine-name" placeholder="Medicine name" required>
+          <input type="text" class="medicine-dosage" placeholder="Dosage (e.g., 500mg)" required>
+          <input type="text" class="medicine-frequency" placeholder="Frequency (e.g., Twice daily)" required>
+          <input type="number" class="medicine-duration" placeholder="Days" min="1" value="7" style="width: 80px;">
+          <button type="button" onclick="this.parentElement.remove()">✗</button>
+        </div>
+      `;
+      document.getElementById('prescription-instructions').value = '';
+      document.getElementById('prescription-diagnosis').value = '';
+      document.getElementById('allow-refills').checked = false;
+      document.getElementById('refill-count').value = 0;
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('prescription-date').value = today;
+      
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + 30);
+      document.getElementById('prescription-expiry').value = expiry.toISOString().split('T')[0];
+    }
+    
+    window.addMedicineRow = function() {
+      const container = document.getElementById('medicines-container');
+      const row = document.createElement('div');
+      row.className = 'medicine-row';
+      row.innerHTML = `
+        <input type="text" class="medicine-name" placeholder="Medicine name" required>
+        <input type="text" class="medicine-dosage" placeholder="Dosage (e.g., 500mg)" required>
+        <input type="text" class="medicine-frequency" placeholder="Frequency (e.g., Twice daily)" required>
+        <input type="number" class="medicine-duration" placeholder="Days" min="1" value="7" style="width: 80px;">
+        <button type="button" onclick="this.parentElement.remove()">✗</button>
+      `;
+      container.appendChild(row);
+    }
+    
+    window.searchPatientsForPrescription = async function(searchTerm) {
+      const container = document.getElementById('prescription-patient-results');
+      if (!container) return;
+      
+      if (!searchTerm || searchTerm.length < 2) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`search_patients.php?term=${encodeURIComponent(searchTerm)}`);
+        const data = await response.json();
+        
+        if (data.success && data.patients && data.patients.length > 0) {
+          let html = '';
+          data.patients.slice(0, 5).forEach(patient => {
+            html += `
+              <div class="search-result-item" onclick="window.selectPatientForPrescription('${patient.pkh}', '${patient.name.replace(/'/g, "\\'")}', '${patient.email}')">
+                <strong>${patient.name}</strong>
+                ${patient.email ? `<div style="font-size: 11px; color: #718096;">${patient.email}</div>` : ''}
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<div style="padding: 10px; color: #718096;">No patients found</div>';
+        }
+      } catch (error) {
+        console.error('Error searching patients:', error);
+      }
+    }
+    
+    window.selectPatientForPrescription = function(pkh, name, email) {
+      document.getElementById('prescription-patient-pkh').value = pkh;
+      document.getElementById('selected-prescription-patient-name').innerHTML = `${name} ${email ? `(${email})` : ''}`;
+      document.getElementById('selected-prescription-patient').style.display = 'block';
+      document.getElementById('prescription-patient-results').innerHTML = '';
+      document.getElementById('prescription-patient-search').value = '';
+    }
+    
+    window.clearPrescriptionPatient = function() {
+      document.getElementById('prescription-patient-pkh').value = '';
+      document.getElementById('selected-prescription-patient').style.display = 'none';
+    }
+    
+    window.submitPrescription = async function() {
+      const patientPkh = document.getElementById('prescription-patient-pkh').value;
+      if (!patientPkh) {
+        log("❌ Please select a patient", true);
+        return;
+      }
+      
+      // Collect medicines
+      const medicineRows = document.querySelectorAll('.medicine-row');
+      const medicines = [];
+      let valid = true;
+      
+      medicineRows.forEach(row => {
+        const name = row.querySelector('.medicine-name').value.trim();
+        const dosage = row.querySelector('.medicine-dosage').value.trim();
+        const frequency = row.querySelector('.medicine-frequency').value.trim();
+        const duration = row.querySelector('.medicine-duration').value;
+        
+        if (!name || !dosage || !frequency || !duration) {
+          valid = false;
+          return;
+        }
+        
+        medicines.push({
+          name: name,
+          dosage: dosage,
+          frequency: frequency,
+          duration: parseInt(duration)
+        });
+      });
+      
+      if (!valid || medicines.length === 0) {
+        log("❌ Please fill in all medicine details", true);
+        return;
+      }
+      
+      const instructions = document.getElementById('prescription-instructions').value.trim();
+      const diagnosis = document.getElementById('prescription-diagnosis').value.trim();
+      const date = document.getElementById('prescription-date').value;
+      const expiry = document.getElementById('prescription-expiry').value;
+      const allowRefills = document.getElementById('allow-refills').checked;
+      const refillCount = document.getElementById('refill-count').value;
+      
+      if (!date || !expiry) {
+        log("❌ Please fill in all required fields", true);
+        return;
+      }
+      
+      try {
+        log("💊 Creating prescription...");
+        
+        // Get patient info
+        const patient = await getPatientInfo(patientPkh);
+        
+        // Create prescription object
+        const prescription = {
+          id: 'rx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          doctor: walletPkh,
+          doctorName: doctorInfo ? doctorInfo.name : 'Doctor',
+          patient: patientPkh,
+          patientName: patient.name,
+          medicines: medicines,
+          instructions: instructions,
+          diagnosis: diagnosis,
+          date: date,
+          expiry: expiry,
+          allowRefills: allowRefills,
+          refills: allowRefills ? parseInt(refillCount) : 0,
+          refillsUsed: 0,
+          status: 'active',
+          createdAt: new Date().toISOString()
+        };
+        
+        // Save to localStorage
+        const allPrescriptions = JSON.parse(localStorage.getItem('allPrescriptions') || '[]');
+        allPrescriptions.push(prescription);
+        localStorage.setItem('allPrescriptions', JSON.stringify(allPrescriptions));
+        
+        log(`✅ Prescription created successfully for ${patient.name}!`);
+        log(`📋 Prescription ID: ${prescription.id}`);
+        
+        // Reload prescriptions
+        await loadPrescriptions();
+        await showRecentPrescriptions();
+        
+        // Close form
+        window.hidePrescriptionForm();
+        
+      } catch (error) {
+        log(`❌ Failed to create prescription: ${error.message}`, true);
+      }
+    }
+    
+    window.showPrescriptionsModal = function() {
+      const modal = document.getElementById('prescriptions-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        window.showPrescriptionTab('active');
+      }
+    }
+    
+    window.closePrescriptionsModal = function() {
+      const modal = document.getElementById('prescriptions-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    
+    window.showPrescriptionTab = async function(tab) {
+      document.querySelectorAll('.prescription-tab').forEach(btn => btn.classList.remove('active'));
+      const tabBtn = document.getElementById(`tab-${tab}`);
+      if (tabBtn) tabBtn.classList.add('active');
+      
+      const container = document.getElementById('all-prescriptions-list');
+      if (!container) return;
+      
+      let filteredPrescriptions = [];
+      const now = new Date();
+      
+      if (tab === 'active') {
+        filteredPrescriptions = prescriptions.filter(p => new Date(p.expiry) >= now);
+      } else if (tab === 'expired') {
+        filteredPrescriptions = prescriptions.filter(p => new Date(p.expiry) < now);
+      } else {
+        filteredPrescriptions = prescriptions;
+      }
+      
+      if (filteredPrescriptions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No prescriptions found</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const p of filteredPrescriptions) {
+        const isExpired = new Date(p.expiry) < now;
+        const statusClass = isExpired ? 'prescription-expired' : 'prescription-active';
+        const statusText = isExpired ? 'Expired' : 'Active';
+        
+        html += `
+          <div class="prescription-card" onclick="window.viewPrescriptionDetails('${p.id}')" style="cursor: pointer;">
+            <div class="prescription-header">
+              <div>
+                <span class="prescription-medicine">${p.patientName}</span>
+                <span style="font-size: 12px; color: #718096; margin-left: 10px;">${p.medicines.length} medicine(s)</span>
+              </div>
+              <span class="${statusClass}">${statusText}</span>
+            </div>
+            
+            <div class="prescription-details">
+              <div><strong>Date:</strong> ${new Date(p.date).toLocaleDateString()}</div>
+              <div><strong>Expires:</strong> ${new Date(p.expiry).toLocaleDateString()}</div>
+              ${p.diagnosis ? `<div><strong>Diagnosis:</strong> ${p.diagnosis}</div>` : ''}
+            </div>
+            
+            <div style="margin-top: 10px;">
+              <strong>Medicines:</strong>
+              <ul style="margin-top: 5px; padding-left: 20px;">
+                ${p.medicines.map(m => `<li>${m.name} - ${m.dosage} (${m.frequency}) for ${m.duration} days</li>`).join('')}
+              </ul>
+            </div>
+            
+            ${p.instructions ? `<div class="prescription-instruction">📝 ${p.instructions}</div>` : ''}
+            
+            <div class="prescription-footer">
+              <span>Dr. ${p.doctorName || 'Doctor'}</span>
+              ${p.allowRefills ? `<span>Refills: ${p.refillsUsed}/${p.refills}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    window.viewPrescriptionDetails = function(prescriptionId) {
+      const prescription = prescriptions.find(p => p.id === prescriptionId);
+      if (!prescription) return;
+      
+      const modal = document.getElementById('prescription-details-modal');
+      const content = document.getElementById('prescription-details-content');
+      
+      const isExpired = new Date(prescription.expiry) < new Date();
+      const statusText = isExpired ? 'Expired' : 'Active';
+      const statusColor = isExpired ? '#a0aec0' : '#48bb78';
+      
+      let medicinesHtml = '<ul style="margin-top: 10px; padding-left: 20px;">';
+      prescription.medicines.forEach(m => {
+        medicinesHtml += `<li><strong>${m.name}</strong> - ${m.dosage} (${m.frequency}) for ${m.duration} days</li>`;
+      });
+      medicinesHtml += '</ul>';
+      
+      content.innerHTML = `
+        <div style="padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h4 style="margin: 0;">Patient: ${prescription.patientName}</h4>
+            <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 4px;">${statusText}</span>
+          </div>
+          
+          <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p><strong>Prescription ID:</strong> ${prescription.id}</p>
+            <p><strong>Date Issued:</strong> ${new Date(prescription.date).toLocaleDateString()}</p>
+            <p><strong>Expiry Date:</strong> ${new Date(prescription.expiry).toLocaleDateString()}</p>
+            ${prescription.diagnosis ? `<p><strong>Diagnosis:</strong> ${prescription.diagnosis}</p>` : ''}
+          </div>
+          
+          <h5 style="margin: 10px 0;">Medicines:</h5>
+          ${medicinesHtml}
+          
+          ${prescription.instructions ? `
+            <div style="margin-top: 15px;">
+              <strong>Instructions:</strong>
+              <p style="background: #ebf8ff; padding: 10px; border-radius: 4px; margin-top: 5px;">${prescription.instructions}</p>
+            </div>
+          ` : ''}
+          
+          <div style="margin-top: 15px; display: flex; gap: 20px;">
+            ${prescription.allowRefills ? `
+              <div><strong>Refills:</strong> ${prescription.refillsUsed}/${prescription.refills}</div>
+            ` : '<div><strong>Refills:</strong> Not allowed</div>'}
+            <div><strong>Prescribed by:</strong> Dr. ${prescription.doctorName || 'Doctor'}</div>
+          </div>
+        </div>
+      `;
+      
+      modal.style.display = 'flex';
+    }
+    
+    window.closePrescriptionDetailsModal = function() {
+      const modal = document.getElementById('prescription-details-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Show all appointments modal
+    window.showAppointmentsModal = function() {
+      const modal = document.getElementById('appointments-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        window.showAppointmentTab('pending');
+      }
+    }
+
+    window.closeAppointmentsModal = function() {
+      const modal = document.getElementById('appointments-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Show appointment tab in modal
+    window.showAppointmentTab = async function(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const tabBtn = document.getElementById(`tab-${tab}`);
+      if (tabBtn) tabBtn.classList.add('active');
+      
+      const container = document.getElementById('all-appointments-list');
+      if (!container) return;
+      
+      let appointments = [];
+      
+      if (tab === 'pending') {
+        appointments = doctorAppointments.pending;
+      } else if (tab === 'confirmed') {
+        appointments = doctorAppointments.confirmed;
+      } else if (tab === 'completed') {
+        appointments = doctorAppointments.completed;
+      } else {
+        appointments = [
+          ...doctorAppointments.pending.map(a => ({...a, status: 'pending'})),
+          ...doctorAppointments.confirmed.map(a => ({...a, status: 'confirmed'})),
+          ...doctorAppointments.completed.map(a => ({...a, status: 'completed'}))
+        ].sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+      }
+      
+      if (appointments.length === 0) {
+        container.innerHTML = '<div class="empty-state">No appointments found</div>';
+        return;
+      }
+      
+      let html = '';
+      for (let i = 0; i < appointments.length; i++) {
+        const apt = appointments[i];
+        const aptDate = new Date(apt.date + 'T' + apt.time);
+        const statusColor = apt.status === 'pending' ? '#f6ad55' : (apt.status === 'confirmed' ? '#48bb78' : '#a0aec0');
+        
+        html += `
+          <div class="appointment-item" style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: bold;">${aptDate.toLocaleDateString()} at ${apt.time}</div>
+                <div class="patient-name">👤 ${apt.patientName || 'Patient'}</div>
+                ${apt.patientEmail ? `<div class="patient-info">📧 ${apt.patientEmail}</div>` : ''}
+                <div style="font-size: 12px; margin-top: 5px;">Reason: ${apt.reason || 'Check-up'}</div>
+                ${apt.notes ? `<div style="font-size: 11px; color: #718096;">📝 ${apt.notes}</div>` : ''}
+              </div>
+              <div>
+                <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                  ${apt.status.toUpperCase()}
+                </span>
+                ${apt.status === 'pending' ? `
+                  <div style="margin-top: 5px;">
+                    <button onclick="window.confirmAppointment('${apt.id}')" class="btn-small" style="background: #48bb78; color: white;">✓</button>
+                    <button onclick="window.rejectAppointment('${apt.id}')" class="btn-small" style="background: #f56565; color: white;">✗</button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Schedule functions
+    window.showMySchedule = function() {
+      const modal = document.getElementById('schedule-modal');
+      if (modal) {
+        const schedule = JSON.parse(localStorage.getItem('doctor_schedule_' + walletPkh) || '{}');
+        
+        if (schedule.days) {
+          const days = schedule.days.split(',');
+          document.getElementById('mon').checked = days.includes('Mon');
+          document.getElementById('tue').checked = days.includes('Tue');
+          document.getElementById('wed').checked = days.includes('Wed');
+          document.getElementById('thu').checked = days.includes('Thu');
+          document.getElementById('fri').checked = days.includes('Fri');
+          document.getElementById('sat').checked = days.includes('Sat');
+          document.getElementById('sun').checked = days.includes('Sun');
+        }
+        
+        if (schedule.from) document.getElementById('available-from').value = schedule.from;
+        if (schedule.to) document.getElementById('available-to').value = schedule.to;
+        if (schedule.fee) document.getElementById('consultation-fee').value = schedule.fee;
+        
+        modal.style.display = 'flex';
+      }
+    }
+
+    window.closeScheduleModal = function() {
+      document.getElementById('schedule-modal').style.display = 'none';
+    }
+
+    window.updateSchedule = function() {
+      const days = [];
+      if (document.getElementById('mon').checked) days.push('Mon');
+      if (document.getElementById('tue').checked) days.push('Tue');
+      if (document.getElementById('wed').checked) days.push('Wed');
+      if (document.getElementById('thu').checked) days.push('Thu');
+      if (document.getElementById('fri').checked) days.push('Fri');
+      if (document.getElementById('sat').checked) days.push('Sat');
+      if (document.getElementById('sun').checked) days.push('Sun');
+      
+      const schedule = {
+        days: days.join(','),
+        from: document.getElementById('available-from').value,
+        to: document.getElementById('available-to').value,
+        fee: document.getElementById('consultation-fee').value
+      };
+      
+      localStorage.setItem('doctor_schedule_' + walletPkh, JSON.stringify(schedule));
+      
+      log(`✅ Schedule updated successfully`);
+      window.closeScheduleModal();
+    }
+
+    // EMERGENCY FUNCTIONS - DOCTOR SIDE
+    window.showEmergencyAccessModal = function() {
+      const modal = document.getElementById('emergency-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+      
+      // Add patient search listener
+      const searchInput = document.getElementById('emergency-patient-search');
+      if (searchInput) {
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', debounce(async function(e) {
+          const searchTerm = e.target.value;
+          if (searchTerm.length < 2) {
+            document.getElementById('emergency-patient-list').innerHTML = '<div class="loading-doctors">Type to search for patients...</div>';
+            return;
+          }
+          
+          const response = await fetch(`search_patients.php?term=${encodeURIComponent(searchTerm)}`);
+          const data = await response.json();
+          
+          const container = document.getElementById('emergency-patient-list');
+          
+          if (data.success && data.patients && data.patients.length > 0) {
+            let html = '';
+            data.patients.slice(0, 5).forEach(patient => {
+              html += `
+                <div class="search-result-item" onclick="window.selectEmergencyPatient('${patient.pkh}', '${patient.name.replace(/'/g, "\\'")}')">
+                  <strong>${patient.name}</strong>
+                  ${patient.email ? `<div style="font-size: 11px; color: #718096;">${patient.email}</div>` : ''}
+                </div>
+              `;
+            });
+            container.innerHTML = html;
+          } else {
+            container.innerHTML = '<div class="empty-state">No patients found</div>';
+          }
+        }, 500));
+      }
+      
+      // Add reason select listener
+      const reasonSelect = document.getElementById('emergency-reason-select');
+      reasonSelect.addEventListener('change', function() {
+        const otherContainer = document.getElementById('other-reason-container');
+        otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+      });
+    }
+
+    window.selectEmergencyPatient = async function(patientPkh, patientName) {
+      document.getElementById('emergency-patient-pkh').value = patientPkh;
+      document.getElementById('emergency-patient-search').value = patientName;
+      document.getElementById('emergency-patient-list').innerHTML = '<div class="loading-doctors">Loading patient records...</div>';
+      
+      // Load patient records
+      await loadEmergencyPatientRecords(patientPkh);
+    }
+
+    async function loadEmergencyPatientRecords(patientPkh) {
+      const container = document.getElementById('emergency-records-list');
+      
+      // Filter records for this patient
+      const patientRecords = allPatientRecords.filter(u => {
+        if (!u.datum) return false;
+        try {
+          const d = Data.from(u.datum, EMRDatum);
+          return d.patient === patientPkh;
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      if (patientRecords.length === 0) {
+        container.innerHTML = '<div class="empty-state">No records found for this patient</div>';
+        return;
+      }
+      
+      let html = '';
+      for (const r of patientRecords) {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          const txDate = new Date(parseInt(r.txHash.substring(0, 8), 16) * 1000);
+          const doctor = await getDoctorInfo(d.doctor);
+          const doctorName = doctor ? doctor.name : 'Unknown Doctor';
+          
+          html += `
+            <div class="record-card" onclick="window.selectEmergencyRecord('${d.recordHash}', '${txDate.toLocaleDateString()}', '${doctorName}')">
+              <div class="record-header">
+                <span><strong>Dr. ${doctorName}</strong></span>
+                <span class="record-date">${txDate.toLocaleDateString()}</span>
+              </div>
+              <div class="record-hash">${d.recordHash.substring(0, 30)}...</div>
+              <div style="font-size: 11px; margin-top: 5px;">Status: ${d.resolved ? 'Resolved' : 'Active'}</div>
+            </div>
+          `;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      
+      container.innerHTML = html;
+    }
+
+    window.selectEmergencyRecord = function(recordHash, date, doctorName) {
+      document.getElementById('emergency-record-hash').value = recordHash;
+      document.getElementById('selected-record-details').innerHTML = `Record from ${date} by Dr. ${doctorName}<br><small style="font-size: 11px;">${recordHash.substring(0, 30)}...</small>`;
+      document.getElementById('selected-emergency-info').style.display = 'block';
+    }
+
+    window.requestEmergencyAccess = async function() {
+      const patientPkh = document.getElementById('emergency-patient-pkh').value;
+      const recordHash = document.getElementById('emergency-record-hash').value;
+      let reason = document.getElementById('emergency-reason-select').value;
+      
+      if (reason === 'Other') {
+        reason = document.getElementById('other-reason').value.trim();
+      }
+      
+      if (!patientPkh || !recordHash) {
+        log("❌ Please select a patient and record", true);
+        return;
+      }
+
+      if (!reason) {
+        log("❌ Please provide an emergency reason", true);
+        return;
+      }
+      
+      if (!lucid || !walletPkh) {
+        log("❌ Please connect wallet first", true);
+        return;
+      }
+      
+      try {
+        log("🚨 Requesting emergency access...");
+        
+        // Get patient info
+        const patient = await getPatientInfo(patientPkh);
+        
+        // Find the record UTXO
+        const utxos = await lucid.utxosAt(scriptAddress);
+        
+        const recordUtxo = utxos.find(u => {
+          if (!u.datum) return false;
+          try {
+            const d = Data.from(u.datum, EMRDatum);
+            return d.recordHash === recordHash;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        if (!recordUtxo) {
+          log("❌ No record found with that hash", true);
+          return;
+        }
+
+        const d = Data.from(recordUtxo.datum, EMRDatum);
+        
+        // Log emergency access request
+        const emergencyLog = {
+          id: 'emergency_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          recordHash: recordHash,
+          patient: patientPkh,
+          patientName: patient.name,
+          doctor: walletPkh,
+          doctorName: doctorInfo ? doctorInfo.name : 'You',
+          reason: reason,
+          timestamp: new Date().toISOString(),
+          txHash: recordUtxo.txHash
+        };
+        
+        // Save to localStorage
+        emergencyRequests.push(emergencyLog);
+        localStorage.setItem('emergencyRequests_' + walletPkh, JSON.stringify(emergencyRequests));
+        
+        // Also save to patient's emergency history
+        const patientEmergencyHistory = JSON.parse(localStorage.getItem('emergencyAccess_' + patientPkh) || '[]');
+        patientEmergencyHistory.push({
+          ...emergencyLog,
+          isAuthorized: true,
+          requester: walletPkh,
+          requesterName: doctorInfo ? doctorInfo.name : 'Doctor'
+        });
+        localStorage.setItem('emergencyAccess_' + patientPkh, JSON.stringify(patientEmergencyHistory));
+        
+        // Display record information
+        log("📋 EMERGENCY ACCESS GRANTED");
+        log("─".repeat(60));
+        log(`Patient: ${patient.name}`);
+        log(`Record Date: ${new Date(parseInt(recordUtxo.txHash.substring(0, 8), 16) * 1000).toLocaleDateString()}`);
+        log(`Status: ${d.resolved ? 'Resolved' : 'Active'}`);
+        log("─".repeat(60));
+        log(`⚠️ This access has been logged for audit`);
+        log(`Reason: ${reason}`);
+        log(`Time: ${new Date().toLocaleString()}`);
+        
+        // Show record details
+        log("\n📄 RECORD DETAILS:");
+        log(`  • Patient ID: ${d.patient}`);
+        log(`  • Doctor ID: ${d.doctor}`);
+        log(`  • Resolved: ${d.resolved ? 'Yes' : 'No'}`);
+        log(`  • Full Hash: ${d.recordHash}`);
+        
+        // Clear form
+        document.getElementById('emergency-patient-search').value = '';
+        document.getElementById('emergency-record-hash').value = '';
+        document.getElementById('emergency-patient-pkh').value = '';
+        document.getElementById('selected-emergency-info').style.display = 'none';
+        document.getElementById('other-reason').value = '';
+        document.getElementById('emergency-reason-select').value = 'Medical Emergency';
+        document.getElementById('other-reason-container').style.display = 'none';
+        document.getElementById('emergency-patient-list').innerHTML = '<div class="loading-doctors">Type to search for patients...</div>';
+        document.getElementById('emergency-records-list').innerHTML = '<div class="loading-doctors">Select a patient first to see records...</div>';
+        
+        // Update alerts
+        await loadEmergencyRequests();
+        await showEmergencyAlerts();
+        
+        // Close modal
+        window.closeEmergencyModal();
+        
+      } catch (error) {
+        log(`❌ Emergency access failed: ${error.message}`, true);
+        console.error(error);
+      }
+    }
+
+    window.closeEmergencyModal = function() {
+      const modal = document.getElementById('emergency-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+      // Clear form
+      document.getElementById('emergency-patient-search').value = '';
+      document.getElementById('emergency-record-hash').value = '';
+      document.getElementById('emergency-patient-pkh').value = '';
+      document.getElementById('selected-emergency-info').style.display = 'none';
+      document.getElementById('other-reason').value = '';
+      document.getElementById('emergency-reason-select').value = 'Medical Emergency';
+      document.getElementById('other-reason-container').style.display = 'none';
+      document.getElementById('emergency-patient-list').innerHTML = '<div class="loading-doctors">Type to search for patients...</div>';
+      document.getElementById('emergency-records-list').innerHTML = '<div class="loading-doctors">Select a patient first to see records...</div>';
+    }
+
+    window.viewEmergencyDetails = function(emergencyId) {
+      const emergency = emergencyRequests.find(e => e.id === emergencyId);
+      if (!emergency) return;
+      
+      log(`📋 Emergency Access Details:`);
+      log(`  Patient: ${emergency.patientName}`);
+      log(`  Reason: ${emergency.reason}`);
+      log(`  Time: ${new Date(emergency.timestamp).toLocaleString()}`);
+      log(`  Record: ${emergency.recordHash}`);
+    }
+
+    window.showEmergencyHistory = function() {
+      const modal = document.getElementById('emergency-history-modal');
+      const container = document.getElementById('emergency-history-list');
+      
+      if (emergencyRequests.length === 0) {
+        container.innerHTML = '<div class="empty-state">No emergency access history</div>';
+      } else {
+        let html = '';
+        emergencyRequests.slice().reverse().forEach(req => {
+          html += `
+            <div class="emergency-card">
+              <div class="emergency-header">
+                <span class="emergency-title">🚨 ${req.patientName}</span>
+                <span class="emergency-time">${new Date(req.timestamp).toLocaleString()}</span>
+              </div>
+              <div class="emergency-details">
+                <div><strong>Reason:</strong> ${req.reason}</div>
+                <div><strong>Record:</strong> ${req.recordHash.substring(0, 30)}...</div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+      
+      modal.style.display = 'flex';
+    }
+
+    window.closeEmergencyHistoryModal = function() {
+      document.getElementById('emergency-history-modal').style.display = 'none';
+    }
+
+    async function showRecentPatients(patients, allRecords) {
+      const container = document.getElementById('recent-patients-list');
+      if (!container) return;
+      
+      if (patients.length === 0) {
+        container.innerHTML = '<div class="empty-state">No patients yet</div>';
+        return;
+      }
+      
+      const patientInfos = await getPatientNames(patients);
+      
+      let html = '';
+      for (const patient of patients) {
+        const patientInfo = patientInfos.find(p => p.pkh === patient) || { name: 'Unknown Patient', email: '', phone: '' };
+        
+        // Find last visit
+        const lastVisit = allRecords
+          .filter(r => {
+            try {
+              const d = Data.from(r.datum, EMRDatum);
+              return d.patient === patient;
+            } catch (e) {
+              return false;
+            }
+          })
+          .sort((a, b) => parseInt(b.txHash.substring(0, 8), 16) - parseInt(a.txHash.substring(0, 8), 16))[0];
+        
+        const lastVisitDate = lastVisit ? 
+          new Date(parseInt(lastVisit.txHash.substring(0, 8), 16) * 1000).toLocaleDateString() : 
+          'Unknown';
+        
+        html += `
+          <div class="patient-item" style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+            <div class="patient-name">👤 ${patientInfo.name}</div>
+            ${patientInfo.email ? `<div class="patient-info">📧 ${patientInfo.email}</div>` : ''}
+            <div class="patient-info">Last visit: ${lastVisitDate}</div>
+            <button onclick="window.viewPatient('${patient}')" class="btn-small" style="margin-top: 5px;">View Details</button>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    async function showPendingReviews(pending) {
+      const container = document.getElementById('pending-reviews-list');
+      if (!container) return;
+      
+      if (pending.length === 0) {
+        container.innerHTML = '<div class="empty-state">No pending reviews</div>';
+        return;
+      }
+      
+      const patientPkhs = pending.map(p => {
+        try {
+          const d = Data.from(p.datum, EMRDatum);
+          return d.patient;
+        } catch (e) {
+          return null;
+        }
+      }).filter(p => p !== null);
+      
+      const patientInfos = await getPatientNames(patientPkhs);
+      const patientMap = new Map(patientInfos.map(p => [p.pkh, p]));
+      
+      let html = '';
+      pending.forEach(p => {
+        try {
+          const d = Data.from(p.datum, EMRDatum);
+          const patient = patientMap.get(d.patient) || { name: 'Unknown Patient' };
+          
+          html += `
+            <div class="pending-item" style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="patient-name">👤 ${patient.name}</div>
+                  <div style="font-size: 10px; color: #718096;">Record ID: ${d.recordHash.substring(0, 16)}...</div>
+                </div>
+                <button onclick="window.quickResolve('${d.recordHash}')" class="btn-small">Resolve</button>
+              </div>
+            </div>
+          `;
+        } catch (e) {}
+      });
+      
+      container.innerHTML = html;
+    }
+
+    async function showTodaySchedule(todayRecords) {
+      const container = document.getElementById('schedule-list');
+      if (!container) return;
+      
+      if (todayRecords.length === 0) {
+        container.innerHTML = '<div class="empty-state">No appointments today</div>';
+        return;
+      }
+      
+      const patientPkhs = todayRecords.map(r => {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          return d.patient;
+        } catch (e) {
+          return null;
+        }
+      }).filter(p => p !== null);
+      
+      const patientInfos = await getPatientNames(patientPkhs);
+      const patientMap = new Map(patientInfos.map(p => [p.pkh, p]));
+      
+      let html = '';
+      for (const r of todayRecords) {
+        try {
+          const d = Data.from(r.datum, EMRDatum);
+          const time = new Date(parseInt(r.txHash.substring(0, 8), 16) * 1000).toLocaleTimeString();
+          const patient = patientMap.get(d.patient) || { name: 'Unknown Patient' };
+          
+          html += `
+            <div class="schedule-item" style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+              <div style="display: flex; justify-content: space-between;">
+                <div>
+                  <div style="font-weight: bold;">${time}</div>
+                  <div class="patient-name">👤 ${patient.name}</div>
+                </div>
+                <span style="background: ${d.resolved ? '#48bb78' : '#f6ad55'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+                  ${d.resolved ? '✓ Done' : '⏳ Pending'}
+                </span>
+              </div>
+            </div>
+          `;
+        } catch (e) {}
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Patient search for new record form
+    window.searchPatientsForRecord = async function(searchTerm) {
+      const container = document.getElementById('patient-search-results');
+      if (!container) return;
+      
+      if (!searchTerm || searchTerm.length < 2) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`search_patients.php?term=${encodeURIComponent(searchTerm)}`);
+        const data = await response.json();
+        
+        if (data.success && data.patients && data.patients.length > 0) {
+          let html = '';
+          data.patients.slice(0, 5).forEach(patient => {
+            html += `
+              <div class="search-result-item" onclick="window.selectPatientForRecord('${patient.pkh}', '${patient.name.replace(/'/g, "\\'")}', '${patient.email}')">
+                <strong>${patient.name}</strong>
+                ${patient.email ? `<div style="font-size: 11px; color: #718096;">${patient.email}</div>` : ''}
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<div style="padding: 10px; color: #718096;">No patients found</div>';
+        }
+      } catch (error) {
+        console.error('Error searching patients:', error);
+      }
+    }
+
+    window.selectPatientForRecord = function(pkh, name, email) {
+      document.getElementById('patient-pkh').value = pkh;
+      document.getElementById('selected-patient-name').innerHTML = `${name} ${email ? `(${email})` : ''}`;
+      document.getElementById('selected-patient-info').style.display = 'block';
+      document.getElementById('patient-search-results').innerHTML = '';
+      document.getElementById('patient-search-input').value = '';
+    }
+
+    window.clearPatientSelection = function() {
+      document.getElementById('patient-pkh').value = '';
+      document.getElementById('selected-patient-info').style.display = 'none';
+    }
+
+    window.quickResolve = function(recordHash) {
+      const input = document.getElementById('recordHash');
+      if (input) input.value = recordHash;
+      window.resolveRecord();
+    }
+
+    window.viewPatient = async function(patientPkh) {
+      const patient = await getPatientInfo(patientPkh);
+      
+      const modal = document.getElementById('patient-modal');
+      const details = document.getElementById('patient-details');
+      if (modal && details) {
+        details.innerHTML = `
+          <div style="padding: 20px;">
+            <p><strong>Name:</strong> ${patient.name}</p>
+            ${patient.email ? `<p><strong>Email:</strong> ${patient.email}</p>` : ''}
+            ${patient.phone ? `<p><strong>Phone:</strong> ${patient.phone}</p>` : ''}
+            ${patient.dob ? `<p><strong>Date of Birth:</strong> ${patient.dob}</p>` : ''}
+            ${patient.blood_group ? `<p><strong>Blood Group:</strong> ${patient.blood_group}</p>` : ''}
+            ${patient.address ? `<p><strong>Address:</strong> ${patient.address}</p>` : ''}
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button onclick="window.showNewRecordFormWithPatient('${patientPkh}', '${patient.name}')" class="btn-small btn-success">📝 New Record</button>
+              <button onclick="window.showPrescriptionFormWithPatient('${patientPkh}', '${patient.name}')" class="btn-small btn-success">💊 New Prescription</button>
+            </div>
+          </div>
+        `;
+        modal.style.display = 'flex';
+      }
+    }
+
+    window.showNewRecordFormWithPatient = function(patientPkh, patientName) {
+      document.getElementById('patient-pkh').value = patientPkh;
+      document.getElementById('selected-patient-name').innerHTML = patientName;
+      document.getElementById('selected-patient-info').style.display = 'block';
+      window.closePatientModal();
+      window.showNewRecordForm();
+    }
+    
+    window.showPrescriptionFormWithPatient = function(patientPkh, patientName) {
+      document.getElementById('prescription-patient-pkh').value = patientPkh;
+      document.getElementById('selected-prescription-patient-name').innerHTML = patientName;
+      document.getElementById('selected-prescription-patient').style.display = 'block';
+      window.closePatientModal();
+      window.showPrescriptionForm();
+    }
+
+    window.closePatientModal = function() {
+      const modal = document.getElementById('patient-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Modal functions
+    window.showNewRecordForm = function() {
+      const form = document.getElementById('new-record-form');
+      if (form) form.style.display = 'block';
+      
+      // Add search listener
+      const searchInput = document.getElementById('patient-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(function(e) {
+          window.searchPatientsForRecord(e.target.value);
+        }, 500));
+      }
+    }
+    
+    window.hideNewRecordForm = function() {
+      const form = document.getElementById('new-record-form');
+      if (form) form.style.display = 'none';
+    }
+    
+    window.showResolveModal = function() {
+      const modal = document.getElementById('resolve-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+    
+    window.closeResolveModal = function() {
+      const modal = document.getElementById('resolve-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    
+    window.showBatchModal = function() {
+      const modal = document.getElementById('batch-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+    
+    window.closeBatchModal = function() {
+      const modal = document.getElementById('batch-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    
+    window.showAuditModal = function() {
+      const modal = document.getElementById('audit-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+    
+    window.closeAuditModal = function() {
+      const modal = document.getElementById('audit-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    
+    window.showPatientSearch = function() {
+      const search = document.getElementById('patient-search');
+      if (search) search.focus();
+    }
+    
+    window.searchPatients = async function() {
+      const searchTerm = document.getElementById('patient-search')?.value.trim();
+      if (!searchTerm || searchTerm.length < 2) return;
+      
+      const container = document.getElementById('search-results');
+      if (!container) return;
+      
+      try {
+        const response = await fetch(`search_patients.php?term=${encodeURIComponent(searchTerm)}`);
+        const data = await response.json();
+        
+        if (data.success && data.patients && data.patients.length > 0) {
+          let html = '<div class="search-results-list">';
+          
+          data.patients.slice(0, 10).forEach(patient => {
+            html += `
+              <div class="search-result-item" onclick="window.viewPatient('${patient.pkh}')">
+                <strong>${patient.name}</strong>
+                ${patient.email ? `<div style="font-size: 11px; color: #718096;">${patient.email}</div>` : ''}
+                ${patient.phone ? `<div style="font-size: 11px; color: #718096;">📞 ${patient.phone}</div>` : ''}
+              </div>
+            `;
+          });
+          
+          html += '</div>';
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<div class="empty-state">No patients found</div>';
+        }
+      } catch (error) {
+        console.error('Error searching patients:', error);
+        container.innerHTML = '<div class="empty-state">Error searching patients</div>';
+      }
+    }
+
+    window.showMyPatients = function() {
+      log("👥 Viewing all patients");
+    }
+
+    // Debounce function
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // Auto-connect if coming from role selection
+    window.onload = function() {
+      const selectedRole = localStorage.getItem('selectedRole');
+      if (selectedRole === 'doctor') {
+        const connectBtn = document.getElementById('connect-btn');
+        if (connectBtn) connectBtn.style.display = 'block';
+        log("👨‍⚕️ Please connect your wallet to access Doctor Portal");
+      }
+    }
+
+    // Copy to clipboard function
+    window.copyToClipboard = function(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        log('✅ Copied to clipboard!');
+      }).catch(() => {
+        log('❌ Failed to copy');
+      });
+    }
+
+    // Log function
+    window.log = function(message, isError = false) {
+      const logEl = document.getElementById('log');
+      if (logEl) {
+        const timestamp = new Date().toLocaleTimeString();
+        logEl.innerHTML = `[${timestamp}] ${message}\n` + logEl.innerHTML;
+        if (isError) {
+          console.error(message);
+        } else {
+          console.log(message);
+        }
+      }
+    }
+
+    window.clearLog = function() {
+      const logEl = document.getElementById('log');
+      if (logEl) {
+        logEl.innerHTML = 'Log cleared.';
+      }
+    }
+
+    // Make sure all functions that are called from HTML are on window
+    window.submitRecord = function() {
+      log("Submit record function called");
+    }
+
+    window.resolveRecord = function() {
+      log("Resolve record function called");
+    }
+
+    window.batchResolve = function() {
+      log("Batch resolve function called");
+    }
+
+    window.viewAuditLog = function() {
+      log("View audit log function called");
+    }
+
+    window.showStats = function() {
+      log("Show stats function called");
+    }
+  </script>
+</body>
+</html>

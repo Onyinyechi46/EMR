@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMR Pro - Patient Registration</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Add doctor selection styles */
+    .doctor-option {
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .doctor-option:hover {
+      background: #f7fafc;
+      border-color: #48bb78;
+    }
+    
+    .doctor-option.selected {
+      background: #f0fff4;
+      border-color: #48bb78;
+      border-width: 2px;
+    }
+    
+    .doctor-specialty {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #48bb78;
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+  </style>
+  <script type="module" src="emr.js"></script>
+</head>
+<body>
+  <div class="container registration-container">
+    <div class="registration-card">
+      <h2>🏥 Patient Registration</h2>
+      
+      <!-- Step Indicator (same as before) -->
+      <div class="step-indicator">
+        <div class="step active" id="step1">
+          <div class="step-number">1</div>
+          <div class="step-label">Connect Wallet</div>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-number">2</div>
+          <div class="step-label">Personal Info</div>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-number">3</div>
+          <div class="step-label">Medical Info</div>
+        </div>
+        <div class="step" id="step4">
+          <div class="step-number">4</div>
+          <div class="step-label">Choose Doctor</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Connect Wallet -->
+      <div id="step1-content">
+        <!-- Same as before -->
+        <p style="text-align: center; color: #718096; margin-bottom: 20px;">
+          Connect your Lace wallet to get your PubKeyHash
+        </p>
+        
+        <button onclick="connectWalletForRegistration()" id="connect-wallet-btn" class="btn-connect">
+          🔌 Connect Lace Wallet
+        </button>
+        
+        <div id="wallet-connected" style="display: none;">
+          <div class="pkh-display">
+            <strong>Your PubKeyHash:</strong>
+            <p id="wallet-pkh" style="margin-top: 10px; font-size: 14px;"></p>
+          </div>
+          
+          <button onclick="nextStep()" class="btn-primary" style="width: 100%;">
+            Continue to Personal Info →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Personal Information -->
+      <div id="step2-content" style="display: none;">
+        <form id="personal-form">
+          <div class="form-group">
+            <label>PubKeyHash (from wallet)</label>
+            <input type="text" id="pkh" name="pkh" readonly required>
+          </div>
+          
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="name" name="name" required placeholder="Enter your full name">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" id="email" name="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+              <label>Phone *</label>
+              <input type="tel" id="phone" name="phone" required placeholder="+1234567890">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="dob" name="dob">
+            </div>
+            <div class="form-group">
+              <label>Blood Group</label>
+              <select id="blood_group" name="blood_group">
+                <option value="">Select</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Address</label>
+            <textarea id="address" name="address" rows="2" placeholder="Your address"></textarea>
+          </div>
+          
+          <button onclick="nextStep2()" type="button" class="btn-primary" style="width: 100%; margin-bottom: 10px;">
+            Continue to Medical Info →
+          </button>
+          
+          <button onclick="prevStep()" type="button" class="btn-secondary" style="width: 100%;">
+            ← Back
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 3: Medical Information -->
+      <div id="step3-content" style="display: none;">
+        <form id="medical-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Emergency Contact Name</label>
+              <input type="text" id="emergency_contact" name="emergency_contact" placeholder="Emergency contact">
+            </div>
+            <div class="form-group">
+              <label>Emergency Phone</label>
+              <input type="tel" id="emergency_phone" name="emergency_phone" placeholder="Emergency phone">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Allergies</label>
+            <textarea id="allergies" name="allergies" rows="2" placeholder="List any allergies..."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Current Medications</label>
+            <textarea id="medications" name="medications" rows="2" placeholder="List current medications..."></textarea>
+          </div>
+          
+          <button onclick="nextStep3()" type="button" class="btn-primary" style="width: 100%; margin-bottom: 10px;">
+            Continue to Doctor Selection →
+          </button>
+          
+          <button onclick="prevStep2()" type="button" class="btn-secondary" style="width: 100%;">
+            ← Back to Personal Info
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 4: Choose Doctor -->
+      <div id="step4-content" style="display: none;">
+        <form onsubmit="submitPatientRegistration(event)">
+          <div class="form-group">
+            <label>Search Doctors</label>
+            <input type="text" id="doctor-search" placeholder="Search by name, specialization, or hospital" 
+                   oninput="searchDoctors()">
+          </div>
+          
+          <div class="form-group">
+            <label>Select Your Primary Doctor (Optional)</label>
+            <div id="doctors-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+              <div style="text-align: center; color: #718096;">Loading doctors...</div>
+            </div>
+          </div>
+          
+          <input type="hidden" id="primary_doctor" name="primary_doctor">
+          
+          <button type="submit" class="btn-register">
+            Complete Registration
+          </button>
+          
+          <button onclick="prevStep3()" type="button" class="btn-secondary" style="width: 100%; margin-top: 10px;">
+            ← Back to Medical Info
+          </button>
+        </form>
+      </div>
+
+      <div class="login-link">
+        Already registered? <a href="patient.html">Login to Patient Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let lucid, walletPkh;
+    let selectedDoctor = null;
+    
+    // Connect wallet (same as before)
+    window.connectWalletForRegistration = async function() {
+      if (!window.cardano?.lace) {
+        alert("Lace wallet not found. Please install Lace wallet.");
+        return;
+      }
+
+      try {
+        lucid = await Lucid.new(new Blockfrost(BLOCKFROST_URL, BLOCKFROST_KEY), NETWORK);
+        const api = await window.cardano.lace.enable();
+        lucid.selectWallet(api);
+
+        const walletAddress = await lucid.wallet.address();
+        const walletDetails = lucid.utils.getAddressDetails(walletAddress);
+        walletPkh = walletDetails.paymentCredential.hash;
+
+        document.getElementById('wallet-pkh').textContent = walletPkh;
+        document.getElementById('pkh').value = walletPkh;
+        
+        document.getElementById('connect-wallet-btn').style.display = 'none';
+        document.getElementById('wallet-connected').style.display = 'block';
+        
+      } catch (error) {
+        alert("Failed to connect: " + error.message);
+      }
+    }
+
+    // Load doctors for selection
+    window.loadDoctorsForRegistration = async function(search = '') {
+      try {
+        let url = 'get_doctors.php';
+        if (search) {
+          url += '?search=' + encodeURIComponent(search);
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        const container = document.getElementById('doctors-list');
+        
+        if (data.success && data.doctors.length > 0) {
+          let html = '';
+          data.doctors.forEach(doctor => {
+            const isSelected = selectedDoctor === doctor.pkh ? 'selected' : '';
+            html += `
+              <div class="doctor-option ${isSelected}" onclick="selectDoctor('${doctor.pkh}', '${doctor.name}')">
+                <div style="display: flex; justify-content: space-between;">
+                  <strong>${doctor.name}</strong>
+                  <span class="doctor-specialty">${doctor.specialization}</span>
+                </div>
+                <div style="font-size: 12px; color: #718096; margin-top: 5px;">
+                  🏥 ${doctor.hospital || 'Private Practice'} | 📅 ${doctor.available_days || 'Weekdays'}
+                </div>
+                ${doctor.bio ? `<div style="font-size: 11px; margin-top: 5px;">${doctor.bio.substring(0, 60)}...</div>` : ''}
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<div style="text-align: center; color: #718096; padding: 20px;">No doctors found</div>';
+        }
+      } catch (error) {
+        console.error('Error loading doctors:', error);
+      }
+    }
+
+    window.selectDoctor = function(pkh, name) {
+      selectedDoctor = pkh;
+      document.getElementById('primary_doctor').value = pkh;
+      
+      // Highlight selected
+      document.querySelectorAll('.doctor-option').forEach(el => {
+        el.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+    }
+
+    window.searchDoctors = function() {
+      const search = document.getElementById('doctor-search').value;
+      loadDoctorsForRegistration(search);
+    }
+
+    // Navigation functions
+    window.nextStep = function() {
+      if (!walletPkh) {
+        alert("Please connect your wallet first");
+        return;
+      }
+      document.getElementById('step1-content').style.display = 'none';
+      document.getElementById('step2-content').style.display = 'block';
+      document.getElementById('step2').classList.add('active');
+      document.getElementById('step1').classList.add('completed');
+    }
+    
+    window.nextStep2 = function() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      
+      if (!name || !email || !phone) {
+        alert("Please fill in all required fields");
+        return;
+      }
+      
+      document.getElementById('step2-content').style.display = 'none';
+      document.getElementById('step3-content').style.display = 'block';
+      document.getElementById('step3').classList.add('active');
+      document.getElementById('step2').classList.add('completed');
+    }
+    
+    window.nextStep3 = function() {
+      document.getElementById('step3-content').style.display = 'none';
+      document.getElementById('step4-content').style.display = 'block';
+      document.getElementById('step4').classList.add('active');
+      document.getElementById('step3').classList.add('completed');
+      loadDoctorsForRegistration();
+    }
+    
+    window.prevStep = function() {
+      document.getElementById('step2-content').style.display = 'none';
+      document.getElementById('step1-content').style.display = 'block';
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
+    }
+    
+    window.prevStep2 = function() {
+      document.getElementById('step3-content').style.display = 'none';
+      document.getElementById('step2-content').style.display = 'block';
+      document.getElementById('step3').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+    }
+    
+    window.prevStep3 = function() {
+      document.getElementById('step4-content').style.display = 'none';
+      document.getElementById('step3-content').style.display = 'block';
+      document.getElementById('step4').classList.remove('active');
+      document.getElementById('step3').classList.add('active');
+    }
+    
+    // Submit registration
+    window.submitPatientRegistration = async function(event) {
+      event.preventDefault();
+      
+      const formData = new FormData();
+      formData.append('pkh', document.getElementById('pkh').value);
+      formData.append('name', document.getElementById('name').value);
+      formData.append('email', document.getElementById('email').value);
+      formData.append('phone', document.getElementById('phone').value);
+      formData.append('dob', document.getElementById('dob').value);
+      formData.append('blood_group', document.getElementById('blood_group').value);
+      formData.append('address', document.getElementById('address').value);
+      formData.append('emergency_contact', document.getElementById('emergency_contact').value);
+      formData.append('emergency_phone', document.getElementById('emergency_phone').value);
+      formData.append('allergies', document.getElementById('allergies').value);
+      formData.append('medications', document.getElementById('medications').value);
+      formData.append('primary_doctor', document.getElementById('primary_doctor').value);
+      
+      try {
+        const response = await fetch('register_patient.php', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('✅ Registration successful! You can now login.');
+          window.location.href = 'patient.html';
+        } else {
+          alert('❌ Registration failed: ' + result.message);
+        }
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

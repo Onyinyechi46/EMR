@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMR Pro - Doctor Registration</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .registration-container {
+      max-width: 700px;
+      margin: 40px auto;
+    }
+    
+    .registration-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .registration-card h2 {
+      color: #2d3748;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+    
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #48bb78;
+      box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1);
+    }
+    
+    .form-group input[readonly] {
+      background: #f7fafc;
+      cursor: not-allowed;
+    }
+    
+    .pkh-display {
+      background: #f0fff4;
+      border-left: 4px solid #48bb78;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      word-break: break-all;
+    }
+    
+    .btn-register {
+      background: #48bb78;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-register:hover {
+      background: #38a169;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .btn-connect {
+      background: #48bb78;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-connect:hover {
+      background: #38a169;
+    }
+    
+    .availability-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .day-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px;
+      background: #f7fafc;
+      border-radius: 4px;
+    }
+    
+    .specialization-tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #e6fffa;
+      color: #319795;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #718096;
+    }
+    
+    .login-link a {
+      color: #48bb78;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <script type="module" src="emr.js"></script>
+</head>
+<body>
+  <div class="container registration-container">
+    <div class="registration-card">
+      <h2>👨‍⚕️ Doctor Registration</h2>
+      
+      <!-- Connect Wallet Section -->
+      <div id="connect-section">
+        <p style="text-align: center; color: #718096; margin-bottom: 20px;">
+          Connect your Lace wallet to register as a doctor
+        </p>
+        
+        <button onclick="connectWalletForRegistration()" id="connect-wallet-btn" class="btn-connect">
+          🔌 Connect Lace Wallet
+        </button>
+        
+        <div id="wallet-connected" style="display: none;">
+          <div class="pkh-display">
+            <strong>Your PubKeyHash:</strong>
+            <p id="wallet-pkh" style="margin-top: 10px; font-size: 14px;"></p>
+          </div>
+          
+          <button onclick="showRegistrationForm()" class="btn-primary" style="width: 100%;">
+            Continue to Registration →
+          </button>
+        </div>
+      </div>
+
+      <!-- Registration Form (Hidden initially) -->
+      <div id="registration-form" style="display: none;">
+        <form onsubmit="submitDoctorRegistration(event)">
+          <div class="form-group">
+            <label>PubKeyHash (from wallet)</label>
+            <input type="text" id="pkh" name="pkh" readonly required>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="name" name="name" required placeholder="Dr. John Doe">
+            </div>
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" id="email" name="email" required placeholder="doctor@hospital.com">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone *</label>
+              <input type="tel" id="phone" name="phone" required placeholder="+1234567890">
+            </div>
+            <div class="form-group">
+              <label>License Number *</label>
+              <input type="text" id="license" name="license" required placeholder="Medical license #">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Specialization *</label>
+            <select id="specialization" name="specialization" required>
+              <option value="">Select Specialization</option>
+              <option value="General Practitioner">General Practitioner</option>
+              <option value="Cardiologist">Cardiologist</option>
+              <option value="Dermatologist">Dermatologist</option>
+              <option value="Pediatrician">Pediatrician</option>
+              <option value="Neurologist">Neurologist</option>
+              <option value="Orthopedic">Orthopedic</option>
+              <option value="Ophthalmologist">Ophthalmologist</option>
+              <option value="Dentist">Dentist</option>
+              <option value="Psychiatrist">Psychiatrist</option>
+              <option value="Gynecologist">Gynecologist</option>
+              <option value="Oncologist">Oncologist</option>
+              <option value="Endocrinologist">Endocrinologist</option>
+            </select>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hospital/Clinic</label>
+              <input type="text" id="hospital" name="hospital" placeholder="Hospital name">
+            </div>
+            <div class="form-group">
+              <label>Consultation Fee ($)</label>
+              <input type="number" id="fee" name="fee" step="0.01" placeholder="50.00">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Clinic Address</label>
+            <textarea id="address" name="address" rows="2" placeholder="Clinic address"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Available Days</label>
+            <div class="availability-grid">
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Mon"> Mon
+              </label>
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Tue"> Tue
+              </label>
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Wed"> Wed
+              </label>
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Thu"> Thu
+              </label>
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Fri"> Fri
+              </label>
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Sat"> Sat
+              </label>
+              <label class="day-checkbox">
+                <input type="checkbox" name="days[]" value="Sun"> Sun
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Available From</label>
+              <input type="time" id="available_from" value="09:00">
+            </div>
+            <div class="form-group">
+              <label>Available To</label>
+              <input type="time" id="available_to" value="17:00">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Professional Bio</label>
+            <textarea id="bio" name="bio" rows="3" placeholder="Tell patients about yourself..."></textarea>
+          </div>
+          
+          <button type="submit" class="btn-register">
+            Complete Registration
+          </button>
+        </form>
+      </div>
+
+      <div class="login-link">
+        Already registered? <a href="doctor.html">Login to Doctor Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let lucid, walletPkh;
+    
+    // Connect wallet for registration
+    window.connectWalletForRegistration = async function() {
+      if (!window.cardano?.lace) {
+        alert("Lace wallet not found. Please install Lace wallet.");
+        return;
+      }
+
+      try {
+        lucid = await Lucid.new(new Blockfrost(BLOCKFROST_URL, BLOCKFROST_KEY), NETWORK);
+        const api = await window.cardano.lace.enable();
+        lucid.selectWallet(api);
+
+        const walletAddress = await lucid.wallet.address();
+        const walletDetails = lucid.utils.getAddressDetails(walletAddress);
+        walletPkh = walletDetails.paymentCredential.hash;
+
+        // Display PKH
+        document.getElementById('wallet-pkh').textContent = walletPkh;
+        document.getElementById('pkh').value = walletPkh;
+        
+        // Show connected state
+        document.getElementById('connect-wallet-btn').style.display = 'none';
+        document.getElementById('wallet-connected').style.display = 'block';
+        
+      } catch (error) {
+        alert("Failed to connect: " + error.message);
+      }
+    }
+
+    window.showRegistrationForm = function() {
+      if (!walletPkh) {
+        alert("Please connect your wallet first");
+        return;
+      }
+      
+      document.getElementById('connect-section').style.display = 'none';
+      document.getElementById('registration-form').style.display = 'block';
+    }
+    
+    // Submit doctor registration
+    window.submitDoctorRegistration = async function(event) {
+      event.preventDefault();
+      
+      // Collect selected days
+      const days = [];
+      document.querySelectorAll('input[name="days[]"]:checked').forEach(cb => {
+        days.push(cb.value);
+      });
+      
+      const formData = new FormData();
+      formData.append('pkh', document.getElementById('pkh').value);
+      formData.append('name', document.getElementById('name').value);
+      formData.append('email', document.getElementById('email').value);
+      formData.append('phone', document.getElementById('phone').value);
+      formData.append('license', document.getElementById('license').value);
+      formData.append('specialization', document.getElementById('specialization').value);
+      formData.append('hospital', document.getElementById('hospital').value);
+      formData.append('fee', document.getElementById('fee').value);
+      formData.append('address', document.getElementById('address').value);
+      formData.append('available_days', days.join(','));
+      formData.append('available_from', document.getElementById('available_from').value);
+      formData.append('available_to', document.getElementById('available_to').value);
+      formData.append('bio', document.getElementById('bio').value);
+      
+      try {
+        const response = await fetch('register_doctor.php', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('✅ Registration successful! You can now login as a doctor.');
+          window.location.href = 'doctor.html';
+        } else {
+          alert('❌ Registration failed: ' + result.message);
+        }
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

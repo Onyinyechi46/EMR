@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMR Pro - Choose Your Role</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="emr.js"></script>
+</head>
+<body>
+  <div class="landing-container">
+    <div class="header">
+      <h1>🏥 EMR Pro</h1>
+      <p class="subtitle">Blockchain Medical Records System</p>
+    </div>
+
+    <div class="role-cards">
+      <!-- Patient Card -->
+      <div class="role-card patient-card" onclick="selectRoleAndRedirect('patient')">
+        <div class="role-icon">👤</div>
+        <h2>Patient Portal</h2>
+        <p class="role-description">Access your medical records, track appointments, and manage your health</p>
+        
+        <div class="features-list">
+          <h3>Features:</h3>
+          <ul>
+            <li>📋 View your medical history</li>
+            <li>📅 Upcoming appointments</li>
+            <li>🔐 Share records with doctors</li>
+            <li>🚨 Emergency access</li>
+            <li>✅ Verify record authenticity</li>
+            <li>📊 Health timeline</li>
+            <li>⏰ Next check-up reminders</li>
+            <li>💊 Prescription history</li>
+          </ul>
+        </div>
+        
+        <button class="btn-patient">Continue as Patient →</button>
+      </div>
+
+      <!-- Doctor Card -->
+      <div class="role-card doctor-card" onclick="selectRoleAndRedirect('doctor')">
+        <div class="role-icon">👨‍⚕️</div>
+        <h2>Doctor Portal</h2>
+        <p class="role-description">Manage patients, create records, and track medical histories</p>
+        
+        <div class="features-list">
+          <h3>Features:</h3>
+          <ul>
+            <li>👥 Patient management</li>
+            <li>📝 Create medical records</li>
+            <li>📅 Today's appointments</li>
+            <li>🔍 Patient search</li>
+            <li>📊 Practice analytics</li>
+            <li>⚠️ Pending reviews</li>
+            <li>📋 Audit trail access</li>
+            <li>📦 Batch operations</li>
+          </ul>
+        </div>
+        
+        <button class="btn-doctor">Continue as Doctor →</button>
+      </div>
+    </div>
+
+    <div class="wallet-required">
+      <p>⚠️ Lace wallet required to use this application</p>
+    </div>
+  </div>
+
+  <script>
+    // Store selected role and redirect
+    window.selectRoleAndRedirect = function(role) {
+      localStorage.setItem('selectedRole', role);
+      window.location.href = role === 'patient' ? 'patient.html' : 'doctor.html';
+    }
+  </script>
+</body>
+</html>
